@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  
+  <!-- Care Home & Schedule Motif -->
+  <g filter="url(#shadow)">
+    <!-- Base House / Facility Card -->
+    <rect x="96" y="128" width="320" height="272" rx="28" fill="#ffffff"/>
+    
+    <!-- Roof / Header -->
+    <path d="M96 156 C96 140 108 128 124 128 L388 128 C404 128 416 140 416 156 L416 200 L96 200 Z" fill="#2563eb"/>
+    
+    <!-- Heart / Care Symbol on Roof Header -->
+    <path d="M256 164 C256 154 246 146 236 146 C224 146 216 156 216 168 C216 186 256 204 256 204 C256 204 296 186 296 168 C296 156 288 146 276 146 C266 146 256 154 256 164 Z" fill="#ef4444"/>
+
+    <!-- Schedule / Shift Table Rows -->
+    <rect x="132" y="232" width="248" height="36" rx="8" fill="#eff6ff"/>
+    <rect x="148" y="242" width="60" height="16" rx="4" fill="#2563eb"/>
+    <rect x="220" y="242" width="100" height="16" rx="4" fill="#cbd5e1"/>
+
+    <rect x="132" y="284" width="248" height="36" rx="8" fill="#fffbeb"/>
+    <rect x="148" y="294" width="60" height="16" rx="4" fill="#f59e0b"/>
+    <rect x="220" y="294" width="120" height="16" rx="4" fill="#cbd5e1"/>
+
+    <rect x="132" y="336" width="248" height="36" rx="8" fill="#f0fdf4"/>
+    <rect x="148" y="346" width="60" height="16" rx="4" fill="#10b981"/>
+    <rect x="220" y="346" width="90" height="16" rx="4" fill="#cbd5e1"/>
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "介護シフトAI自動作成システム Pro",
+  "description": "労働基準法・36協定・人員配置基準チェック付きの介護シフト自動作成PWA",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
