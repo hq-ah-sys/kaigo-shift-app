@@ -9,6 +9,7 @@ import {
   parseTimeVal,
   getStaffRoleAllocationRatio,
   dayOfWeekIdx,
+  getShiftTimeRange,
 } from './shiftEngine';
 
 export interface ComplianceCheckResult {
@@ -247,14 +248,10 @@ export function collectDashboardAlerts(state: AppState): Array<{ type: 'danger' 
         const coverage = new Array(24).fill(false);
         fcStaff.forEach((s) => {
           const k = shifts[s.id]?.[d];
-          const pat = shiftPatterns.find((p) => p.facilityId === fc.id && p.key === k) ||
-            shiftPatterns.find((p) => p.key === k);
-          const tv = k?.startsWith('time:') ? parseTimeVal(k) : null;
-          const sTime = pat?.start || tv?.start;
-          const eTime = pat?.end || tv?.end;
-          if (sTime && eTime) {
-            const sMin = timeToMinutes(sTime);
-            const eMin = timeToMinutes(eTime);
+          const range = getShiftTimeRange(k, fc.id, shiftPatterns);
+          if (range) {
+            const sMin = timeToMinutes(range.start);
+            const eMin = timeToMinutes(range.end);
             if (eMin <= sMin) {
               for (let h = Math.floor(sMin / 60); h < 24; h++) coverage[h] = true;
               for (let h = 0; h < Math.ceil(eMin / 60); h++) coverage[h] = true;
@@ -265,16 +262,10 @@ export function collectDashboardAlerts(state: AppState): Array<{ type: 'danger' 
           // Prior day night shift morning hours
           if (d > 1) {
             const prevK = shifts[s.id]?.[d - 1];
-            const prevPat = shiftPatterns.find((p) => p.facilityId === fc.id && p.key === prevK) ||
-              shiftPatterns.find((p) => p.key === prevK);
-            const prevTv = prevK?.startsWith('time:') ? parseTimeVal(prevK) : null;
-            const prevSTime = prevPat?.start || prevTv?.start;
-            const prevETime = prevPat?.end || prevTv?.end;
-            if (prevPat && isNight(prevPat)) {
-              for (let h = 0; h < Math.ceil(timeToMinutes(prevPat.end) / 60); h++) coverage[h] = true;
-            } else if (prevSTime && prevETime) {
-              const prevSMin = timeToMinutes(prevSTime);
-              const prevEMin = timeToMinutes(prevETime);
+            const prevRange = getShiftTimeRange(prevK, fc.id, shiftPatterns);
+            if (prevRange) {
+              const prevSMin = timeToMinutes(prevRange.start);
+              const prevEMin = timeToMinutes(prevRange.end);
               if (prevEMin <= prevSMin) {
                 for (let h = 0; h < Math.ceil(prevEMin / 60); h++) coverage[h] = true;
               }

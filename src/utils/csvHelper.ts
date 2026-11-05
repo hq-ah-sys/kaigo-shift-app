@@ -292,7 +292,7 @@ export function downloadPatternTemplate(): void {
 }
 
 // Preferences CSV
-export const PREF_CSV_HEADERS = ['職員名', '日付(YYYY/MM/DD)', '希望内容(有休/希望休/time:HH:MM-HH:MM)'];
+export const PREF_CSV_HEADERS = ['職員名', '日付(YYYY/MM/DD)', '希望内容(有休/希望休/前休/後休/time:HH:MM-HH:MM)'];
 
 export function exportPreferencesCSV(state: AppState): void {
   const { year, month, staff, preferences } = state;
@@ -318,6 +318,7 @@ export function downloadPrefTemplate(year: number, month: number): void {
     PREF_CSV_HEADERS,
     ['田中 美咲', `${year}/${mm}/05`, '有休'],
     ['鈴木 健太', `${year}/${mm}/10`, '希望休'],
+    ['佐藤 由美', `${year}/${mm}/12`, '前休'],
     ['山田 花子', `${year}/${mm}/15`, 'time:09:00-17:00'],
   ];
   downloadCSV(rows, '希望入力_テンプレート.csv');

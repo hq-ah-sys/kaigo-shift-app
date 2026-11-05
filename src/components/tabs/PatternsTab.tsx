@@ -378,7 +378,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
       {/* Fixed Patterns Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
         <h3 className="font-bold text-gray-900 text-sm mb-3">📋 システム固定記号（自動計算・0h集計）</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
           <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
             <span className="font-black text-emerald-700 text-sm">有</span>
             <div className="font-bold text-gray-900 mt-1">有給休暇 (0h)</div>
@@ -398,6 +398,16 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
             <span className="font-black text-blue-800 text-sm">明</span>
             <div className="font-bold text-gray-900 mt-1">明け (0h)</div>
             <div className="text-[11px] text-gray-500">夜勤翌日の非勤務日</div>
+          </div>
+          <div className="p-3 rounded-xl bg-teal-50 border border-teal-200">
+            <span className="font-black text-teal-700 text-sm">前休</span>
+            <div className="font-bold text-gray-900 mt-1">午前休 (4h)</div>
+            <div className="text-[11px] text-gray-500">午前休取得（実働4h）</div>
+          </div>
+          <div className="p-3 rounded-xl bg-sky-50 border border-sky-200">
+            <span className="font-black text-sky-700 text-sm">後休</span>
+            <div className="font-bold text-gray-900 mt-1">午後休 (4h)</div>
+            <div className="text-[11px] text-gray-500">午後休取得（実働4h）</div>
           </div>
         </div>
       </div>

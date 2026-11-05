@@ -11,7 +11,8 @@ interface Props {
 
 export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
   const [selectedStaffId, setSelectedStaffId] = useState<number | null>(state.staff[0]?.id ?? null);
-  const [clickMode, setClickMode] = useState<'toggle' | 'time'>('toggle');
+  const [clickMode, setClickMode] = useState<'toggle' | 'time' | 'preset'>('toggle');
+  const [presetType, setPresetType] = useState<'有休' | '希望休' | '前休' | '後休'>('前休');
   const [timeStart, setTimeStart] = useState('09:00');
   const [timeEnd, setTimeEnd] = useState('17:00');
 
@@ -37,9 +38,16 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
         } else {
           prevStaffPrefs[d] = `time:${timeStart}-${timeEnd}`;
         }
+      } else if (clickMode === 'preset') {
+        const cur = prevStaffPrefs[d];
+        if (cur === presetType) {
+          delete prevStaffPrefs[d];
+        } else {
+          prevStaffPrefs[d] = presetType;
+        }
       } else {
-        // Toggle Cycle: none -> 有休 -> 希望休 -> none
-        const cycle = [undefined, '有休', '希望休'];
+        // Toggle Cycle: none -> 有休 -> 希望休 -> 前休 -> 後休 -> none
+        const cycle = [undefined, '有休', '希望休', '前休', '後休'];
         const currentVal = prevStaffPrefs[d];
         const safeVal = currentVal && currentVal.startsWith('time:') ? undefined : currentVal;
         const currentIdx = cycle.indexOf(safeVal);
@@ -192,7 +200,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
         {/* Click Mode Toggle */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span className="font-bold text-gray-700">カレンダークリック動作：</span>
             <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-800">
               <input
@@ -203,7 +211,18 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                 onChange={() => setClickMode('toggle')}
                 className="w-4 h-4 text-blue-600"
               />
-              <span>休日切替（有休 → 希望休）</span>
+              <span>順次切替（有休 → 希望休 → 前休 → 後休）</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-800">
+              <input
+                type="radio"
+                name="prefClickMode"
+                value="preset"
+                checked={clickMode === 'preset'}
+                onChange={() => setClickMode('preset')}
+                className="w-4 h-4 text-blue-600"
+              />
+              <span>指定スタンプ</span>
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-800">
               <input
@@ -217,6 +236,56 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <span>時間帯指定（非常勤等の希望出勤枠）</span>
             </label>
           </div>
+
+          {clickMode === 'preset' && (
+            <div className="flex items-center gap-1.5 animate-in fade-in">
+              <span className="text-gray-500 font-bold">選択項目:</span>
+              <button
+                type="button"
+                onClick={() => setPresetType('前休')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                  presetType === '前休'
+                    ? 'bg-teal-600 text-white border-teal-600 shadow-xs'
+                    : 'bg-white text-teal-800 border-teal-300 hover:bg-teal-50'
+                }`}
+              >
+                前休 (午前休・4h)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPresetType('後休')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                  presetType === '後休'
+                    ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
+                    : 'bg-white text-sky-800 border-sky-300 hover:bg-sky-50'
+                }`}
+              >
+                後休 (午後休・4h)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPresetType('有休')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                  presetType === '有休'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                    : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50'
+                }`}
+              >
+                有休
+              </button>
+              <button
+                type="button"
+                onClick={() => setPresetType('希望休')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                  presetType === '希望休'
+                    ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
+                    : 'bg-white text-amber-900 border-amber-300 hover:bg-amber-50'
+                }`}
+              >
+                希望休
+              </button>
+            </div>
+          )}
 
           {clickMode === 'time' && (
             <div className="flex items-center gap-2 animate-in fade-in">
@@ -241,7 +310,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
       {/* Interactive Calendar Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
             <span>📅</span>
             <span>{selectedStaff?.name || '職員未選択'} のシフト希望カレンダー</span>
@@ -250,7 +319,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
             </span>
           </h3>
 
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="inline-flex items-center gap-1">
               <span className="w-4 h-4 rounded bg-emerald-500 text-white text-[10px] font-black flex items-center justify-center">
                 有
@@ -262,6 +331,18 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                 希
               </span>
               <span>希望休</span>
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="w-4 h-4 rounded bg-teal-500 text-white text-[9px] font-black flex items-center justify-center">
+                前
+              </span>
+              <span>前休(4h)</span>
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="w-4 h-4 rounded bg-sky-500 text-white text-[9px] font-black flex items-center justify-center">
+                後
+              </span>
+              <span>後休(4h)</span>
             </span>
             <span className="inline-flex items-center gap-1">
               <span className="w-4 h-4 rounded bg-purple-600 text-white text-[10px] font-black flex items-center justify-center">
@@ -295,10 +376,14 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
             const dClass = dayOfWeekClass(year, month, d);
             const val = staffPrefs[d];
             const timeVal = val ? parseTimeVal(val) : null;
+            const isMae = val === '前休' || val === '午前休';
+            const isAto = val === '後休' || val === '午後休';
 
             let bgClass = 'bg-white hover:border-blue-400';
             if (val === '有休') bgClass = 'bg-emerald-50 border-emerald-300';
             else if (val === '希望休') bgClass = 'bg-amber-50 border-amber-300';
+            else if (isMae) bgClass = 'bg-teal-50 border-teal-300';
+            else if (isAto) bgClass = 'bg-sky-50 border-sky-300';
             else if (timeVal) bgClass = 'bg-purple-50 border-purple-300';
 
             return (
@@ -335,6 +420,16 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                       希望休
                     </div>
                   )}
+                  {isMae && (
+                    <div className="px-2 py-0.5 rounded-md bg-teal-600 text-white font-black text-center text-xs">
+                      前休 (4h)
+                    </div>
+                  )}
+                  {isAto && (
+                    <div className="px-2 py-0.5 rounded-md bg-sky-600 text-white font-black text-center text-xs">
+                      後休 (4h)
+                    </div>
+                  )}
                   {timeVal && (
                     <div className="px-1.5 py-0.5 rounded-md bg-purple-600 text-white font-bold text-center text-[10px]">
                       {timeVal.start}〜{timeVal.end}
@@ -356,26 +451,29 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div className="text-xs text-gray-400 py-4 text-center">登録された希望はありません</div>
         ) : (
           <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-            {allPrefsList.map((p, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-800"
-              >
-                <span>{p.staffName}</span>
-                <span className="text-gray-400">({month}/{p.day}日)</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded-md font-bold text-[11px] ${
-                    p.type === '有休'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : p.type === '希望休'
-                      ? 'bg-amber-100 text-amber-900'
-                      : 'bg-purple-100 text-purple-800'
-                  }`}
+            {allPrefsList.map((p, idx) => {
+              const isMae = p.type === '前休' || p.type === '午前休';
+              const isAto = p.type === '後休' || p.type === '午後休';
+
+              let badgeClass = 'bg-purple-100 text-purple-800';
+              if (p.type === '有休') badgeClass = 'bg-emerald-100 text-emerald-800';
+              else if (p.type === '希望休') badgeClass = 'bg-amber-100 text-amber-900';
+              else if (isMae) badgeClass = 'bg-teal-100 text-teal-800';
+              else if (isAto) badgeClass = 'bg-sky-100 text-sky-800';
+
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-800"
                 >
-                  {p.type}
-                </span>
-              </div>
-            ))}
+                  <span>{p.staffName}</span>
+                  <span className="text-gray-400">({month}/{p.day}日)</span>
+                  <span className={`px-1.5 py-0.5 rounded-md font-bold text-[11px] ${badgeClass}`}>
+                    {isMae ? '前休 (4h)' : isAto ? '後休 (4h)' : p.type}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

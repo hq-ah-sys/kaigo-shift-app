@@ -104,6 +104,12 @@ function getShiftCellStyle(key: string, patterns: ShiftPattern[]): ShiftStyle {
   if (key === '他' || key === '他事業所') {
     return { bgArgb: 'FFE2E8F0', fgArgb: 'FF334155', bold: true, fontSize: 10 }; // Neutral gray
   }
+  if (key === '午前休' || key === '前休') {
+    return { bgArgb: 'FFCCFBF1', fgArgb: 'FF0F766E', bold: true, fontSize: 10 }; // Teal
+  }
+  if (key === '午後休' || key === '後休') {
+    return { bgArgb: 'FFE0F2FE', fgArgb: 'FF0369A1', bold: true, fontSize: 10 }; // Sky
+  }
   if (key === '時間' || key.startsWith('time:')) {
     return { bgArgb: 'FFEDE9FE', fgArgb: 'FF581C87', bold: true, fontSize: 8 }; // Distinct purple for custom time shifts
   }
@@ -568,6 +574,8 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
     { key: '希', name: '希望休', time: '終日（職員希望による公休）' },
     { key: '休', name: '公休', time: '終日（所定休日）' },
     { key: '他', name: '他', time: '他事業所勤務（各事業所基準）' },
+    { key: '前休', name: '午前休', time: '午前半日休暇（実働4.0h）' },
+    { key: '後休', name: '午後休', time: '午後半日休暇（実働4.0h）' },
     { key: '時間', name: '時間指定勤務', time: '個別指定時間帯（例 12:30~16:00）' },
   ];
 

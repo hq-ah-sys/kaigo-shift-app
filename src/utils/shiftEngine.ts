@@ -68,6 +68,32 @@ export function parseTimeVal(val: string): { start: string; end: string } | null
   return { start: s, end: e };
 }
 
+/**
+ * シフトキーに対応する勤務時間帯（開始〜終了）を取得します。
+ * 通常パターン、time:HH:MM-HH:MM、および半日休（前休・後休）に対応。
+ */
+export function getShiftTimeRange(
+  key: string,
+  facilityId: number | null,
+  patterns: ShiftPattern[]
+): { start: string; end: string } | null {
+  if (!key) return null;
+  if (key === '前休' || key === '午前休') {
+    return { start: '13:30', end: '17:30' }; // 午後実働4h
+  }
+  if (key === '後休' || key === '午後休') {
+    return { start: '08:30', end: '12:30' }; // 午前実働4h
+  }
+  if (key.startsWith('time:')) {
+    return parseTimeVal(key);
+  }
+  const pat = getPatternByKey(key, facilityId, patterns);
+  if (pat && pat.start && pat.end) {
+    return { start: pat.start, end: pat.end };
+  }
+  return null;
+}
+
 export function getTimeKeyHours(key: string): number {
   const tv = parseTimeVal(key);
   if (!tv) return 0;
@@ -78,7 +104,9 @@ export function getTimeKeyHours(key: string): number {
 }
 
 export function isWorkShift(key: string | undefined): boolean {
-  if (!key || key === '' || key === '公休' || SPECIAL_SHIFTS.includes(key as any)) return false;
+  if (!key || key === '' || key === '公休' || key === '有休' || key === '希望休' || key === '明け' || key === '他事業所') {
+    return false;
+  }
   return true;
 }
 
@@ -104,6 +132,9 @@ export function getStaffDayNetH(
 ): number {
   if (!key || key === '公休' || key === '有休' || key === '希望休' || key === '明け' || key === '他事業所') {
     return 0;
+  }
+  if (key === '午前休' || key === '前休' || key === '午後休' || key === '後休') {
+    return 4.0;
   }
   let baseH = 0;
   if (key.startsWith('time:')) {

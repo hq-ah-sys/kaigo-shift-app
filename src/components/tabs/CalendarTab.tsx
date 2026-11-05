@@ -16,6 +16,7 @@ import {
   breakTime,
   getTimeKeyHours,
   getStaffRoleAllocationRatio,
+  getShiftTimeRange,
 } from '../../utils/shiftEngine';
 import { FACILITY_TYPES, SPECIAL_SHIFTS, SP_COLOR, SP_TEXT_COLOR, SP_SHORT } from '../../constants';
 import { exportShiftCalendarToExcel } from '../../utils/excelExport';
@@ -148,13 +149,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       const coverage = new Array(24).fill(false);
       staff.forEach((s) => {
         const k = shifts[s.id]?.[day];
-        const pat = getPatternByKey(k, s.facilityId, shiftPatterns);
-        const tv = k?.startsWith('time:') ? parseTimeVal(k) : null;
-        const sTime = pat?.start || tv?.start;
-        const eTime = pat?.end || tv?.end;
-        if (sTime && eTime) {
-          const sMin = timeToMinutes(sTime);
-          const eMin = timeToMinutes(eTime);
+        const range = getShiftTimeRange(k, s.facilityId, shiftPatterns);
+        if (range) {
+          const sMin = timeToMinutes(range.start);
+          const eMin = timeToMinutes(range.end);
           if (eMin <= sMin) {
             for (let h = Math.floor(sMin / 60); h < 24; h++) coverage[h] = true;
             for (let h = 0; h < Math.ceil(eMin / 60); h++) coverage[h] = true;
@@ -164,13 +162,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
         }
         if (day > 1) {
           const prevK = shifts[s.id]?.[day - 1];
-          const prevPat = getPatternByKey(prevK, s.facilityId, shiftPatterns);
-          const prevTv = prevK?.startsWith('time:') ? parseTimeVal(prevK) : null;
-          const prevSTime = prevPat?.start || prevTv?.start;
-          const prevETime = prevPat?.end || prevTv?.end;
-          if (prevSTime && prevETime) {
-            const prevSMin = timeToMinutes(prevSTime);
-            const prevEMin = timeToMinutes(prevETime);
+          const prevRange = getShiftTimeRange(prevK, s.facilityId, shiftPatterns);
+          if (prevRange) {
+            const prevSMin = timeToMinutes(prevRange.start);
+            const prevEMin = timeToMinutes(prevRange.end);
             if (prevEMin <= prevSMin) {
               for (let h = 0; h < Math.ceil(prevEMin / 60); h++) coverage[h] = true;
             }
@@ -629,6 +624,24 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             </span>
             <span>他事業所勤務 (0h)</span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-5 h-5 rounded font-bold text-[10px] flex items-center justify-center shadow-2xs text-white"
+              style={{ backgroundColor: SP_COLOR['午前休'] }}
+            >
+              前休
+            </span>
+            <span>午前休 (午後勤務 13:30〜17:30 実4.0h)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-5 h-5 rounded font-bold text-[10px] flex items-center justify-center shadow-2xs text-white"
+              style={{ backgroundColor: SP_COLOR['午後休'] }}
+            >
+              後休
+            </span>
+            <span>午後休 (午前勤務 08:30〜12:30 実4.0h)</span>
+          </div>
         </div>
       </div>
 
@@ -851,6 +864,8 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                         const timeVal = key.startsWith('time:') ? parseTimeVal(key) : null;
                         const isNightOff = key === '明け';
                         const isOtherFacShift = key === '他事業所';
+                        const isMorningOff = key === '午前休' || key === '前休';
+                        const isAfternoonOff = key === '午後休' || key === '後休';
 
                         let bg = pat?.color || SP_COLOR[key] || '#f3f4f6';
                         let tc = '#ffffff';
@@ -866,6 +881,12 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                         } else if (isOtherFacShift) {
                           bg = SP_COLOR['他事業所'] || '#e2e8f0';
                           tc = SP_TEXT_COLOR['他事業所'] || '#475569';
+                        } else if (isMorningOff) {
+                          bg = SP_COLOR['午前休'] || '#14b8a6';
+                          tc = SP_TEXT_COLOR['午前休'] || '#ffffff';
+                        } else if (isAfternoonOff) {
+                          bg = SP_COLOR['午後休'] || '#0284c7';
+                          tc = SP_TEXT_COLOR['午後休'] || '#ffffff';
                         } else if (timeVal) {
                           bg = '#7c3aed';
                           tc = '#ffffff';
@@ -878,7 +899,11 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                             className="border-r border-gray-200 p-0 h-9 relative hover:brightness-90 transition cursor-pointer"
                             style={{ backgroundColor: isNightOff ? undefined : bg }}
                             title={`${s.name} ${month}/${d}: ${key}${
-                              s.otherFacilityConcurrent && isOtherFacShift
+                              isMorningOff
+                                ? ' (午前半日休 / 実働4.0h 13:30〜17:30)'
+                                : isAfternoonOff
+                                ? ' (午後半日休 / 実働4.0h 08:30〜12:30)'
+                                : s.otherFacilityConcurrent && isOtherFacShift
                                 ? ` (${s.otherFacilityName || '他事業所勤務'})`
                                 : ''
                             }`}
@@ -896,10 +921,36 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                               </div>
                             ) : (
                               <div
-                                className="w-full h-full flex items-center justify-center font-bold text-xs"
+                                className="w-full h-full flex flex-col items-center justify-center font-bold text-xs"
                                 style={{ color: tc }}
                               >
-                                {dispMode === 'time' && pat ? (
+                                {isMorningOff ? (
+                                  dispMode === 'time' ? (
+                                    <div className="text-center leading-none">
+                                      <div className="text-[9px] font-black leading-tight">13:30</div>
+                                      <div className="text-[8px] opacity-90 leading-tight">~17:30</div>
+                                      <div className="text-[7.5px] font-extrabold opacity-95">前休4h</div>
+                                    </div>
+                                  ) : (
+                                    <div className="text-center leading-none">
+                                      <div className="font-black text-xs leading-tight">前休</div>
+                                      <div className="text-[8.5px] font-extrabold opacity-90 leading-tight">4.0h</div>
+                                    </div>
+                                  )
+                                ) : isAfternoonOff ? (
+                                  dispMode === 'time' ? (
+                                    <div className="text-center leading-none">
+                                      <div className="text-[9px] font-black leading-tight">08:30</div>
+                                      <div className="text-[8px] opacity-90 leading-tight">~12:30</div>
+                                      <div className="text-[7.5px] font-extrabold opacity-95">後休4h</div>
+                                    </div>
+                                  ) : (
+                                    <div className="text-center leading-none">
+                                      <div className="font-black text-xs leading-tight">後休</div>
+                                      <div className="text-[8.5px] font-extrabold opacity-90 leading-tight">4.0h</div>
+                                    </div>
+                                  )
+                                ) : dispMode === 'time' && pat ? (
                                   <span className="text-[9px] leading-tight text-center">
                                     {pat.start}
                                     <br />
@@ -1015,13 +1066,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                     const coverage = new Array(24).fill(false);
                     staff.forEach((s) => {
                       const k = shifts[s.id]?.[d];
-                      const pat = getPatternByKey(k, s.facilityId, shiftPatterns);
-                      const tv = k?.startsWith('time:') ? parseTimeVal(k) : null;
-                      const sTime = pat?.start || tv?.start;
-                      const eTime = pat?.end || tv?.end;
-                      if (sTime && eTime) {
-                        const sMin = timeToMinutes(sTime);
-                        const eMin = timeToMinutes(eTime);
+                      const range = getShiftTimeRange(k, s.facilityId, shiftPatterns);
+                      if (range) {
+                        const sMin = timeToMinutes(range.start);
+                        const eMin = timeToMinutes(range.end);
                         if (eMin <= sMin) {
                           for (let h = Math.floor(sMin / 60); h < 24; h++) coverage[h] = true;
                           for (let h = 0; h < Math.ceil(eMin / 60); h++) coverage[h] = true;
@@ -1031,13 +1079,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                       }
                       if (d > 1) {
                         const prevK = shifts[s.id]?.[d - 1];
-                        const prevPat = getPatternByKey(prevK, s.facilityId, shiftPatterns);
-                        const prevTv = prevK?.startsWith('time:') ? parseTimeVal(prevK) : null;
-                        const prevSTime = prevPat?.start || prevTv?.start;
-                        const prevETime = prevPat?.end || prevTv?.end;
-                        if (prevSTime && prevETime) {
-                          const prevSMin = timeToMinutes(prevSTime);
-                          const prevEMin = timeToMinutes(prevETime);
+                        const prevRange = getShiftTimeRange(prevK, s.facilityId, shiftPatterns);
+                        if (prevRange) {
+                          const prevSMin = timeToMinutes(prevRange.start);
+                          const prevEMin = timeToMinutes(prevRange.end);
                           if (prevEMin <= prevSMin) {
                             for (let h = 0; h < Math.ceil(prevEMin / 60); h++) coverage[h] = true;
                           }
