@@ -170,6 +170,15 @@ export function parseAvailDays(str?: string): number[] {
     }
   });
 
+  if (result.length === 0) {
+    const CHAR_MAP: Record<string, number> = { 日: 0, 月: 1, 火: 2, 水: 3, 木: 4, 金: 5, 土: 6 };
+    for (const ch of trimmed) {
+      if (CHAR_MAP[ch] !== undefined && !result.includes(CHAR_MAP[ch])) {
+        result.push(CHAR_MAP[ch]);
+      }
+    }
+  }
+
   return result.length > 0 ? result.sort((a, b) => a - b) : [0, 1, 2, 3, 4, 5, 6];
 }
 

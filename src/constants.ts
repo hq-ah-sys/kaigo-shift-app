@@ -1,6 +1,6 @@
 import { FacilityTypeConfig, AppState, Facility } from './types';
 
-export const APP_VERSION = 'v1.0.36';
+export const APP_VERSION = 'v1.0.39';
 
 export const SPECIAL_SHIFTS = ['有休', '希望休', '公休', '明け', '他事業所', '午前休', '午後休'] as const;
 

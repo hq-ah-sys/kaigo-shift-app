@@ -2,12 +2,55 @@ import React, { useState } from 'react';
 import { AppState, ParsedRule } from '../../types';
 import { generateShifts } from '../../utils/shiftEngine';
 import { interpretInstructionsWithAI } from '../../utils/geminiAI';
-import { Sparkles, Bot, Play, CheckCircle2, AlertCircle, RefreshCw, X } from 'lucide-react';
+import { Sparkles, Bot, Play, CheckCircle2, RefreshCw, X } from 'lucide-react';
 
 interface Props {
   state: AppState;
   onUpdateState: (updater: (prev: AppState) => AppState) => void;
   onNavigateTab: (tab: string) => void;
+}
+
+function mergeParsedRules(existing: ParsedRule[], incoming: ParsedRule[]): ParsedRule[] {
+  const merged = [...existing];
+  for (const newRule of incoming) {
+    // Check if an identical or same-(staffId + ruleType) rule should be updated
+    const conflictIdx = merged.findIndex((r) => {
+      if (r.text === newRule.text) return true;
+      if (r.staffId && newRule.staffId && r.staffId === newRule.staffId && r.ruleType === newRule.ruleType) {
+        if (
+          r.ruleType === 'night_limit' ||
+          r.ruleType === 'must_fill_hours' ||
+          r.ruleType === 'max_days' ||
+          r.ruleType === 'max_consecutive' ||
+          r.ruleType === 'specific_pattern'
+        ) {
+          return true;
+        }
+        if (
+          (r.ruleType === 'specific_dow_work' || r.ruleType === 'specific_dow_leave') &&
+          JSON.stringify(r.dows) === JSON.stringify(newRule.dows)
+        ) {
+          return true;
+        }
+        if (
+          (r.ruleType === 'specific_date_work' ||
+            r.ruleType === 'specific_date_leave' ||
+            r.ruleType === 'specific_date_time') &&
+          JSON.stringify(r.dates) === JSON.stringify(newRule.dates)
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    if (conflictIdx !== -1) {
+      merged[conflictIdx] = newRule;
+    } else {
+      merged.push(newRule);
+    }
+  }
+  return merged;
 }
 
 export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateTab }) => {
@@ -22,7 +65,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
   const handleInterpret = async () => {
     if (!instructionText.trim()) {
-      alert('自然言語による指示を入力してください');
+      setInterpretResultText('⚠️ 自然言語による指示を入力してください。');
       return;
     }
 
@@ -33,11 +76,11 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       const res = await interpretInstructionsWithAI(instructionText, state);
       onUpdateState((prev) => ({
         ...prev,
-        parsedRules: [...prev.parsedRules, ...res.rules],
+        parsedRules: mergeParsedRules(prev.parsedRules, res.rules),
       }));
       setInterpretResultText(res.rawAnalysis);
     } catch (err: any) {
-      alert(`AI解析エラー: ${err.message}`);
+      setInterpretResultText(`⚠️ AI解析エラー: ${err.message}`);
     } finally {
       setIsInterpreting(false);
     }
@@ -61,7 +104,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
   const handleRunGenerate = async () => {
     if (state.shiftPatterns.length === 0) {
-      alert('シフトパターンが設定されていません。「🕐 シフト設定」タブでパターンを追加してください。');
+      setInterpretResultText('⚠️ シフトパターンが設定されていません。「シフト設定」タブでパターンを追加してください。');
       return;
     }
 
@@ -70,10 +113,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
     if (instructionText.trim()) {
       const res = await interpretInstructionsWithAI(instructionText, state);
       if (res.rules.length > 0) {
-        // Filter out duplicate rule texts
-        const existingTexts = new Set(activeParsedRules.map((r) => r.text));
-        const newUnique = res.rules.filter((r) => !existingTexts.has(r.text));
-        activeParsedRules = [...activeParsedRules, ...newUnique];
+        activeParsedRules = mergeParsedRules(activeParsedRules, res.rules);
         onUpdateState((prev) => ({
           ...prev,
           parsedRules: activeParsedRules,
@@ -90,9 +130,9 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
     const steps: Array<[number, string, number]> = [
       [300, lockedCount > 0 ? `🔒 ${lockedCount}名の固定シフトを保護中...` : '勤務パターン初期化中...', 30],
-      [700, activeParsedRules.length > 0 ? `✨ ${activeParsedRules.length}件のAI指示ルール（曜日・出勤指定）を反映中...` : '相性ルール・禁止ペア制約を適用中...', 50],
+      [700, activeParsedRules.length > 0 ? `✨ ${activeParsedRules.length}件のAI指示ルール（曜日・夜勤上限・所定時間保証等）を反映中...` : '相性ルール・禁止ペア制約を適用中...', 50],
       [1100, '24時間体制・夜勤・明けの自動割り当て中...', 70],
-      [1500, '人員配置基準・常勤換算を最適化中...', 85],
+      [1500, '人員配置基準・常勤換算・所定労働時間を最適化中...', 85],
       [1800, '労働基準法・36協定・5連勤制限の最終適合チェック...', 95],
     ];
 
@@ -104,7 +144,6 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
     });
 
     setTimeout(() => {
-      // Generate with latest active rules
       const stateToGenerate = {
         ...state,
         parsedRules: activeParsedRules,
@@ -126,6 +165,11 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       }, 700);
     }, 2200);
   };
+
+  const s0 = state.staff[0]?.name || '田中 美咲';
+  const s1 = state.staff[1]?.name || '鈴木 健太';
+  const s2 = state.staff[2]?.name || '佐藤 由美';
+  const s3 = state.staff[3]?.name || '山田 花子';
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -175,7 +219,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
           <h3 className="font-bold text-gray-900 text-base">自然言語で追加指示・個別事情を入力（任意）</h3>
         </div>
         <p className="text-xs text-gray-500 mb-3">
-          「木村さんを毎週月曜日に入れて」「佐藤さんを水曜と金曜に早番で入れて」「田中さんは火曜日は休みに」「高橋さんは10日と15日に入れて」「山田さんは週3日以内」など、自然な日本語で入力するとAIが正確にルール化し、シフト表に確実に反映されます。
+          「{s0}さんを毎週月曜日に入れて」「{s1}　夜勤は週1回のみ」「{s3}　毎週木曜日出勤(日)」「{s2}は必ず週所定労働時間数は入れて」など、自然な日本語で入力するとAIが正確にルール化し、シフト表に確実に反映されます。
         </p>
 
         <textarea
@@ -183,10 +227,10 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
           value={instructionText}
           onChange={(e) => setInstructionText(e.target.value)}
           placeholder={`例：
-・${state.staff[0]?.name || '木村'}さんを毎週月曜日に入れて
-・${state.staff[1]?.name || '佐藤'}さんを水曜と金曜に早番で入れて
-・${state.staff[2]?.name || '田中'}さんは火曜日は休みに
-・${state.staff[3]?.name || '高橋'}さんを10日と15日に日勤で入れて`}
+・${s0}さんを毎週月曜日に入れて
+・${s1}　夜勤は週1回のみ
+・${s3}　毎週木曜日出勤(日)
+・${s2}は必ず週所定労働時間数は入れて`}
           className="w-full px-4 py-3 rounded-xl border border-purple-200 text-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-hidden font-medium leading-relaxed bg-purple-50/20"
         />
 
@@ -194,10 +238,10 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
           <span className="text-[11px] font-bold text-gray-500 mr-1">💡 クイック指示の入力例:</span>
           {[
-            `${state.staff[0]?.name?.split(/\s+/)[0] || '木村'}さんを月曜日に入れて`,
-            `${state.staff[1]?.name?.split(/\s+/)[0] || '佐藤'}さんを水曜と金曜に早番で入れて`,
-            `${state.staff[2]?.name?.split(/\s+/)[0] || '田中'}さんは火曜日は休みに`,
-            `${state.staff[3]?.name?.split(/\s+/)[0] || '高橋'}さんを10日と15日に入れて`,
+            `・${s0}さんを毎週月曜日に入れて`,
+            `・${s1}　夜勤は週1回のみ`,
+            `・${s3}　毎週木曜日出勤(日)`,
+            `・${s2}は必ず週所定労働時間数は入れて`,
           ].map((sample, i) => (
             <button
               key={i}
@@ -207,7 +251,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               }}
               className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-[11px] font-medium transition cursor-pointer"
             >
-              + {sample}
+              + {sample.replace(/^・/, '')}
             </button>
           ))}
         </div>
@@ -226,7 +270,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               onClick={() => setInstructionText('')}
               className="px-3 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold text-xs transition cursor-pointer"
             >
-              クリア
+              入力欄をクリア
             </button>
           </div>
         </div>
@@ -260,6 +304,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                         [{rule.staffName || '全職員対象'}]
                       </span>
                       <span>{rule.text}</span>
+
                       {rule.dows && rule.dows.length > 0 && (
                         <span
                           className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
@@ -269,31 +314,80 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           }`}
                         >
                           毎週{rule.dows.map((d) => DOWS[d]).join('・')}曜{' '}
-                          {rule.ruleType === 'specific_dow_work' ? '出勤' : '公休'}
-                          {rule.shiftKey ? ` (${rule.shiftKey})` : ''}
+                          {rule.ruleType === 'specific_dow_work' ? '出勤' : rule.shiftKey || '公休'}
+                          {rule.ruleType === 'specific_dow_work' && rule.shiftKey ? ` (${rule.shiftKey})` : ''}
                         </span>
                       )}
+
                       {rule.dates && rule.dates.length > 0 && (
                         <span
                           className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
-                            rule.ruleType === 'specific_date_work'
+                            rule.ruleType === 'specific_date_work' || rule.ruleType === 'specific_date_time'
                               ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                               : 'bg-amber-100 text-amber-800 border border-amber-200'
                           }`}
                         >
                           {rule.dates.join('・')}日{' '}
-                          {rule.ruleType === 'specific_date_work' ? '出勤' : '公休'}
-                          {rule.shiftKey ? ` (${rule.shiftKey})` : ''}
+                          {rule.ruleType === 'specific_date_leave' ? rule.shiftKey || '公休' : '出勤'}
+                          {rule.shiftKey && rule.ruleType !== 'specific_date_leave' ? ` (${rule.shiftKey})` : ''}
                         </span>
                       )}
-                      {rule.hours && (
+
+                      {rule.ruleType === 'night_limit' && (
+                        <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold text-[10px]">
+                          {rule.maxNightPerMonth === 0 || rule.maxNightPerWeek === 0
+                            ? '夜勤免除 (0回)'
+                            : rule.maxNightPerWeek !== undefined
+                            ? `夜勤上限: 週${rule.maxNightPerWeek}回まで`
+                            : `夜勤上限: 月${rule.maxNightPerMonth}回まで`}
+                        </span>
+                      )}
+
+                      {rule.ruleType === 'must_fill_hours' && (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[10px]">
+                          所定労働時間100%優先充足 (週{rule.hours || 40}h)
+                        </span>
+                      )}
+
+                      {rule.ruleType === 'specific_pattern' && rule.shiftKey && (
+                        <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200 font-bold text-[10px]">
+                          {rule.shiftKey} {rule.onlyThisPattern ? '専従・固定' : '優先配置'}
+                        </span>
+                      )}
+
+                      {rule.ruleType === 'exclude_pattern' && rule.shiftKey && (
+                        <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-800 border border-red-200 font-bold text-[10px]">
+                          {rule.shiftKey} 配置NG
+                        </span>
+                      )}
+
+                      {rule.ruleType === 'deduct_hours' && rule.hours && (
                         <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-[10px]">
                           実働 -{rule.hours}h
                         </span>
                       )}
-                      {rule.maxDays && (
+
+                      {rule.ruleType === 'max_days' && rule.maxDays !== undefined && (
                         <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-[10px]">
                           週上限 {rule.maxDays}日
+                        </span>
+                      )}
+
+                      {rule.ruleType === 'max_consecutive' && rule.maxConsecutive !== undefined && (
+                        <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-[10px]">
+                          最大 {rule.maxConsecutive}連勤まで
+                        </span>
+                      )}
+
+                      {rule.ruleType === 'pair_override' && (
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                            rule.pairType === 'forbidden'
+                              ? 'bg-red-100 text-red-800 border border-red-200'
+                              : 'bg-teal-100 text-teal-800 border border-teal-200'
+                          }`}
+                        >
+                          {rule.pairType === 'forbidden' ? '同日シフトNG' : '同日シフト推奨'}
                         </span>
                       )}
                     </div>
@@ -309,10 +403,16 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             </div>
 
             {interpretResultText && (
-              <div className="text-[11px] text-purple-800/80 pt-1 font-mono">
+              <div className="text-[11px] text-purple-800/80 pt-1 font-mono whitespace-pre-line">
                 {interpretResultText}
               </div>
             )}
+          </div>
+        )}
+
+        {state.parsedRules.length === 0 && interpretResultText && (
+          <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 font-medium whitespace-pre-line">
+            {interpretResultText}
           </div>
         )}
       </div>

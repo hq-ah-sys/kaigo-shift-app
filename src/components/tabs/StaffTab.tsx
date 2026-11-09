@@ -231,12 +231,22 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
             const qualList = (cols[idxQual] || '').split(/[/,、]/).map((s) => s.trim()).filter(Boolean);
             const hrs = parseInt(cols[idxHours], 10) || 40;
             const nightStr = cols[idxNight]?.trim();
-            const isNight = nightStr === '可能' || nightStr === '夜勤のみ' || nightStr === '可';
-            const isNightOnly = nightStr === '夜勤のみ' || nightStr === '夜専';
+            const isNight = nightStr === '可能' || nightStr === '夜勤のみ' || nightStr === '可' || nightStr === '有' || nightStr === '○' || nightStr === '〇';
+            const isNightOnly = nightStr === '夜勤のみ' || nightStr === '夜専' || nightStr === '夜勤専従';
             const avDays = parseAvailDays(cols[idxDays]);
-            const timeEn = cols[idxTimeEn]?.trim() === '有';
-            const avSt = timeEn ? cols[idxStart]?.trim() || '07:00' : null;
-            const avEd = timeEn ? cols[idxEnd]?.trim() || '22:00' : null;
+            const normalizeTime = (t?: string) => {
+              if (!t) return '';
+              const m = t.trim().match(/^(\d{1,2}):(\d{2})$/);
+              return m ? `${m[1].padStart(2, '0')}:${m[2]}` : '';
+            };
+            const normSt = normalizeTime(cols[idxStart]);
+            const normEd = normalizeTime(cols[idxEnd]);
+            const rawTimeFlag = cols[idxTimeEn]?.trim() || '';
+            const timeEn =
+              ['有', 'あり', '○', '〇', '可', 'true', 'TRUE', '1'].includes(rawTimeFlag) ||
+              (rawTimeFlag !== '無' && rawTimeFlag !== 'なし' && Boolean(normSt && normEd));
+            const avSt = timeEn ? normSt || '07:00' : null;
+            const avEd = timeEn ? normEd || '22:00' : null;
             const skillLevel = parseInt(cols[idxSkill], 10) || 3;
             const note = cols[idxNote]?.trim() || undefined;
 

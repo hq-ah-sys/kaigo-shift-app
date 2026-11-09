@@ -89,21 +89,34 @@ export interface ParsedRule {
   text: string;
   staffName?: string;
   staffId?: number;
+  secondStaffName?: string;
+  secondStaffId?: number;
   ruleType:
     | 'specific_dow_work'
     | 'specific_dow_leave'
     | 'specific_date_work'
     | 'specific_date_leave'
     | 'specific_pattern'
+    | 'exclude_pattern'
+    | 'night_limit'
+    | 'must_fill_hours'
     | 'deduct_hours'
     | 'max_days'
+    | 'max_consecutive'
+    | 'pair_override'
     | 'specific_date_time'
     | 'custom_label';
   hours?: number;
   maxDays?: number;
+  maxConsecutive?: number;
+  maxNightPerWeek?: number;
+  maxNightPerMonth?: number;
   dates?: number[];
   dows?: number[]; // 0: 日, 1: 月, 2: 火, 3: 水, 4: 木, 5: 金, 6: 土
   shiftKey?: string;
+  explicitShiftKey?: boolean;
+  onlyThisPattern?: boolean;
+  pairType?: 'forbidden' | 'recommended';
   timeStart?: string;
   timeEnd?: string;
   customLabel?: string;
