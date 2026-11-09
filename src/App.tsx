@@ -4,6 +4,7 @@ import { getInitialDemoState, APP_VERSION } from './constants';
 import { generateShifts } from './utils/shiftEngine';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import mascotLogo from './assets/mascot.png';
 
 // Tabs
 import { DashboardTab } from './components/tabs/DashboardTab';
@@ -164,7 +165,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <span className="p-1 rounded-xl bg-white/15 border border-white/20 shadow-xs flex items-center justify-center overflow-hidden" title="葉っぱの妖精マスコット">
               <img
-                src="/assets/aistudio/____________08c3520b.png"
+                src={mascotLogo}
                 alt="葉っぱの妖精マスコット"
                 className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-lg"
               />
