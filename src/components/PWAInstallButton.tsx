@@ -47,8 +47,8 @@ export const PWAInstallButton: React.FC = () => {
 
   if (isInstalled) {
     return (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
+        <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
         <span>インストール済</span>
       </div>
     );
@@ -58,7 +58,7 @@ export const PWAInstallButton: React.FC = () => {
     <>
       <button
         onClick={handleButtonClick}
-        className="flex items-center gap-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95 cursor-pointer"
+        className="flex items-center gap-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all active:scale-95 cursor-pointer"
         title="アプリをPCまたはスマホにインストール"
       >
         <Download className="w-3.5 h-3.5" />
@@ -126,10 +126,10 @@ export const PWAInstallButton: React.FC = () => {
 
             {/* Direct install button if prompt is available and not in iframe */}
             {isInstallable && !isInIframe && (
-              <div className="mt-4 p-4 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-between gap-3">
-                <div className="text-xs text-teal-900 font-medium">
+              <div className="mt-4 p-4 rounded-2xl bg-teal-100/70 border border-teal-300 flex items-center justify-between gap-3">
+                <div className="text-xs text-teal-950 font-medium">
                   <strong>ワンクリックでインストール可能です：</strong>
-                  <div className="text-teal-700 text-[11px] mt-0.5">
+                  <div className="text-teal-800 text-[11px] mt-0.5">
                     ボタンを押すとブラウザのインストール確認画面が表示されます。
                   </div>
                 </div>
@@ -138,7 +138,7 @@ export const PWAInstallButton: React.FC = () => {
                     const ok = await install();
                     if (ok) setShowModal(false);
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer shrink-0"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer shrink-0"
                 >
                   <Download className="w-4 h-4" />
                   <span>今すぐインストール</span>

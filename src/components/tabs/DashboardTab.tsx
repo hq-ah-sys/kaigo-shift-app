@@ -83,21 +83,21 @@ export const DashboardTab: React.FC<Props> = ({ state, onNavigateTab }) => {
           <div className="text-xs text-gray-400 mt-0.5">延べ日数</div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-xs">
+        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs">
           <div className="flex items-center justify-between text-gray-500 text-xs font-bold uppercase">
             <span>総実労働時間</span>
-            <Clock className="w-4 h-4 text-sky-600" />
+            <Clock className="w-4 h-4 text-sky-700" />
           </div>
-          <div className="text-2xl font-black text-sky-700 mt-2">{totalNetHours.toFixed(0)}</div>
+          <div className="text-2xl font-black text-sky-800 mt-2">{totalNetHours.toFixed(0)}</div>
           <div className="text-xs text-gray-400 mt-0.5">時間 (休憩控除済)</div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-xs">
+        <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-xs">
           <div className="flex items-center justify-between text-gray-500 text-xs font-bold uppercase">
             <span>常勤換算</span>
-            <Award className="w-4 h-4 text-teal-600" />
+            <Award className="w-4 h-4 text-teal-700" />
           </div>
-          <div className="text-2xl font-black text-teal-700 mt-2">{totalFTE.toFixed(2)}</div>
+          <div className="text-2xl font-black text-teal-800 mt-2">{totalFTE.toFixed(2)}</div>
           <div className="text-xs text-gray-400 mt-0.5">人換算</div>
         </div>
 
@@ -153,12 +153,12 @@ export const DashboardTab: React.FC<Props> = ({ state, onNavigateTab }) => {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
           <div className="flex items-center justify-between pb-3 border-b border-gray-100">
             <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-teal-600" />
+              <Briefcase className="w-4 h-4 text-teal-700" />
               <span>職種別 職員構成</span>
             </h3>
             <button
               onClick={() => onNavigateTab('staff')}
-              className="text-xs font-semibold text-teal-600 hover:underline cursor-pointer"
+              className="text-xs font-semibold text-teal-700 hover:underline cursor-pointer"
             >
               職員マスタ →
             </button>
@@ -171,10 +171,10 @@ export const DashboardTab: React.FC<Props> = ({ state, onNavigateTab }) => {
                   <div className="w-36 font-bold text-gray-800 truncate" title={roleName}>
                     {roleName}
                   </div>
-                  <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
-                    <div className="h-full bg-teal-600 rounded-full" style={{ width: `${pct}%` }} />
+                  <div className="flex-1 bg-slate-200/70 rounded-full h-3 overflow-hidden">
+                    <div className="h-full bg-teal-700 rounded-full" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="w-16 text-right font-black text-teal-700">
+                  <div className="w-16 text-right font-black text-teal-800">
                     {count}名
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export const DashboardTab: React.FC<Props> = ({ state, onNavigateTab }) => {
             <ShieldAlert className="w-5 h-5 text-amber-500" />
             <h3 className="text-base font-bold text-gray-900">労基法・人員基準・相性アラート</h3>
           </div>
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">
+          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-teal-100 text-teal-800 border border-teal-300">
             {year}年{month}月度
           </span>
         </div>

@@ -68,13 +68,13 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl p-3 rounded-2xl bg-teal-50 border border-teal-100 shrink-0">
+            <span className="text-3xl p-3 rounded-2xl bg-teal-100/80 border border-teal-300 shrink-0">
               {ft?.icon || '🏢'}
             </span>
             <div>
               <h2 className="text-xl font-bold text-gray-900">{currentFacility.name}</h2>
               <div className="flex items-center gap-2 mt-1">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-900 border border-teal-200">
                   {ft?.name || 'その他'}
                 </span>
                 <span className="text-xs text-gray-500">
@@ -86,7 +86,7 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
           <button
             onClick={openEditModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xs transition cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm shadow-xs transition cursor-pointer"
           >
             <Edit2 className="w-4 h-4" />
             <span>事業所情報を編集</span>

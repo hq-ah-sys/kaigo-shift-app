@@ -321,7 +321,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-teal-600" />
+              <Users className="w-5 h-5 text-teal-700" />
               <span>職員マスタ一覧</span>
               <span className="text-xs font-semibold text-gray-500">
                 ({state.facility.name}・全{state.staff.length}名)
@@ -335,7 +335,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xs transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm shadow-xs transition cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>職員を追加</span>
@@ -371,7 +371,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
+              <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
                 <th className="py-3 px-3 w-8 text-center"></th>
                 <th className="py-3 px-4">氏名</th>
                 <th className="py-3 px-3">形態</th>
@@ -1021,7 +1021,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
                 保存する
               </button>

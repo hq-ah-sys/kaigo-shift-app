@@ -301,7 +301,7 @@ export function downloadPatternTemplate(): void {
 }
 
 // Preferences CSV
-export const PREF_CSV_HEADERS = ['職員名', '日付(YYYY/MM/DD)', '希望内容(有休/希望休/前休/後休/time:HH:MM-HH:MM)'];
+export const PREF_CSV_HEADERS = ['職員名', '日付(YYYY/MM/DD)', '希望内容(有休/希望休/前休/後休/シフト記号/time:HH:MM-HH:MM)'];
 
 export function exportPreferencesCSV(state: AppState): void {
   const { year, month, staff, preferences } = state;

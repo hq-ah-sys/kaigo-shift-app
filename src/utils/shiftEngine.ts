@@ -451,17 +451,18 @@ export function generateShifts(state: AppState): Record<number, Record<number, s
   const forcedLeaveStaffDays = new Set<string>(); // "staffId-day"
   const postNightRestDays = new Set<string>(); // "staffId-day"
 
-  // 2. Apply user preferences first (有休, 希望休, 前休, 後休, time:HH:MM-HH:MM, etc.)
+  // 2. Apply user preferences first (有休, 希望休, 前休, 後休, シフトパターン, time:HH:MM-HH:MM, etc.)
   staff.forEach((s) => {
     if (lockedSet.has(s.id)) return;
     const pref = preferences[s.id] || {};
     Object.entries(pref).forEach(([dStr, val]) => {
       const d = parseInt(dStr, 10);
       if (d >= 1 && d <= days && val) {
-        if (!isStaffWorkingOnFacilityDay(s, year, month, d)) return;
-        newShifts[s.id][d] = val;
+        const matchedPat = getPatternByKey(val, s.facilityId, shiftPatterns);
+        const resolvedVal = matchedPat ? matchedPat.key : val;
+        newShifts[s.id][d] = resolvedVal;
         prefLockedStaffDays.add(`${s.id}-${d}`);
-        if (val === '有休' || val === '希望休' || val === '公休') {
+        if (resolvedVal === '有休' || resolvedVal === '希望休' || resolvedVal === '公休') {
           forcedLeaveStaffDays.add(`${s.id}-${d}`);
         }
       }
@@ -624,8 +625,8 @@ export function generateShifts(state: AppState): Record<number, Record<number, s
 
         const assignRuleShiftOnDay = (d: number) => {
           if (d < 1 || d > days) return;
-          // If the user set Paid Leave (有休) in preferences, preserve 有休; otherwise AI rule applies
-          if (prefLockedStaffDays.has(`${s.id}-${d}`) && newShifts[s.id][d] === '有休') return;
+          // Preserve any user preference (有休, 希望休, シフトパターン等) entered in 希望入力タブ
+          if (prefLockedStaffDays.has(`${s.id}-${d}`)) return;
           if (!isFacilityOpenDay(fc, d)) return;
 
           let assignedKey: string;
@@ -646,11 +647,16 @@ export function generateShifts(state: AppState): Record<number, Record<number, s
           forcedLeaveStaffDays.delete(`${s.id}-${d}`);
 
           if (reqPat && isNight(reqPat)) {
-            if (d + 1 <= days && !lockedSet.has(s.id)) {
+            if (d + 1 <= days && !lockedSet.has(s.id) && !prefLockedStaffDays.has(`${s.id}-${d + 1}`)) {
               newShifts[s.id][d + 1] = '明け';
               ruleLockedStaffDays.add(`${s.id}-${d + 1}`);
             }
-            if (d + 2 <= days && !lockedSet.has(s.id) && !ruleLockedStaffDays.has(`${s.id}-${d + 2}`)) {
+            if (
+              d + 2 <= days &&
+              !lockedSet.has(s.id) &&
+              !prefLockedStaffDays.has(`${s.id}-${d + 2}`) &&
+              !ruleLockedStaffDays.has(`${s.id}-${d + 2}`)
+            ) {
               newShifts[s.id][d + 2] = '公休';
               postNightRestDays.add(`${s.id}-${d + 2}`);
             }

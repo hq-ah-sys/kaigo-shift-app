@@ -199,7 +199,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-600" />
+              <Clock className="w-5 h-5 text-teal-700" />
               <span>シフトパターン設定</span>
               <span className="text-xs font-semibold text-gray-500">
                 ({state.facility.name}・全{state.shiftPatterns.length}種類)
@@ -213,7 +213,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-xs transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm shadow-xs transition cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>パターンを追加</span>
@@ -244,7 +244,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
         </div>
 
         {/* Legal notice banner */}
-        <div className="mt-4 p-3.5 rounded-xl bg-blue-50 border border-blue-100 flex items-start gap-3 text-xs text-blue-900 leading-relaxed">
+        <div className="mt-4 p-3.5 rounded-xl bg-teal-100/60 border border-teal-300 flex items-start gap-3 text-xs text-teal-950 leading-relaxed">
           <span className="text-base shrink-0">💡</span>
           <div>
             <strong>労働基準法第34条に基づく休憩時間自動控除</strong>：労働時間が6時間を超える場合は少なくとも45分（0.75h）、8時間を超える場合は少なくとも1時間（1.0h）の休憩が自動で差し引かれ、実労働時間が正確に集計されます。
@@ -257,7 +257,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
+              <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
                 <th className="py-3 px-4">表示記号</th>
                 <th className="py-3 px-4">パターン名</th>
                 <th className="py-3 px-3">時間帯</th>
@@ -294,14 +294,14 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     <td className="py-3 px-3 text-amber-700 font-semibold">
                       {bH > 0 ? `-${bH}h 控除` : 'なし'}
                     </td>
-                    <td className="py-3 px-3 font-black text-blue-700">{nH.toFixed(1)}h</td>
+                    <td className="py-3 px-3 font-black text-sky-800">{nH.toFixed(1)}h</td>
                     <td className="py-3 px-3 whitespace-nowrap">
                       {night ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-900 border border-sky-200 text-[11px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-900 border border-sky-300 text-[11px] font-bold">
                           <Moon className="w-3 h-3" /> 夜勤
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[11px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-900 text-[11px] font-bold">
                           <Sun className="w-3 h-3" /> 日勤
                         </span>
                       )}
@@ -319,7 +319,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                       <div className="inline-flex items-center gap-1">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="p-1 rounded-md text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
+                          className="p-1 rounded-md text-gray-400 hover:bg-gray-100 hover:text-teal-700 transition"
                           title="編集"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -426,13 +426,13 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                   <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                     表示記号（セル内表記）
                   </label>
-                  <input
+                    <input
                     type="text"
                     maxLength={3}
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
                     placeholder="例：早、A、夜"
-                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-bold text-center focus:border-blue-600 outline-hidden"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-bold text-center focus:border-teal-600 outline-hidden"
                   />
                 </div>
                 <div>
@@ -444,7 +444,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="例：早番（入浴）"
-                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium focus:border-blue-600 outline-hidden"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium focus:border-teal-600 outline-hidden"
                   />
                 </div>
               </div>
@@ -458,7 +458,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     type="time"
                     value={start}
                     onChange={(e) => setStart(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium focus:border-blue-600 outline-hidden"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium focus:border-teal-600 outline-hidden"
                   />
                 </div>
                 <div>
@@ -469,13 +469,13 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     type="time"
                     value={end}
                     onChange={(e) => setEnd(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium focus:border-blue-600 outline-hidden"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium focus:border-teal-600 outline-hidden"
                   />
                 </div>
               </div>
 
               {/* Dynamic Calculation Info */}
-              <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-1">
+              <div className="p-3.5 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-900 space-y-1">
                 <div className="flex items-center justify-between">
                   <span>拘束時間:</span>
                   <strong className="text-gray-900">{currentGross.toFixed(1)} 時間</strong>
@@ -484,7 +484,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                   <span>労基法休憩控除:</span>
                   <strong>{currentBreak > 0 ? `-${currentBreak} 時間` : '0 時間'}</strong>
                 </div>
-                <div className="flex items-center justify-between pt-1 border-t border-blue-200 font-black text-sm text-blue-700">
+                <div className="flex items-center justify-between pt-1 border-t border-teal-200 font-black text-sm text-teal-800">
                   <span>実労働時間:</span>
                   <span>{currentNet.toFixed(1)} 時間</span>
                 </div>
@@ -519,7 +519,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                           type="button"
                           key={c}
                           onClick={() => setColor(c)}
-                          className={`w-6 h-6 rounded-lg transition-transform shadow-2xs ${color === c ? 'scale-125 ring-2 ring-blue-600 z-10' : 'hover:scale-110'}`}
+                          className={`w-6 h-6 rounded-lg transition-transform shadow-2xs ${color === c ? 'scale-125 ring-2 ring-teal-600 z-10' : 'hover:scale-110'}`}
                           style={{ backgroundColor: c }}
                           title={c}
                         />
@@ -541,7 +541,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
                 保存する
               </button>

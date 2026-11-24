@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
 import { AppState } from '../../types';
-import { daysInMonth, dayOfWeekIdx, dayOfWeekName, dayOfWeekClass, parseTimeVal } from '../../utils/shiftEngine';
+import {
+  daysInMonth,
+  dayOfWeekIdx,
+  dayOfWeekName,
+  dayOfWeekClass,
+  parseTimeVal,
+  getPatternByKey,
+  isNight,
+  isStaffWorkingOnFacilityDay,
+} from '../../utils/shiftEngine';
 import { exportPreferencesCSV, downloadPrefTemplate, parseCSV } from '../../utils/csvHelper';
-import { Calendar, Download, Upload, FileText, Clock, Trash2 } from 'lucide-react';
+import { Calendar, Download, Upload, FileText, Clock } from 'lucide-react';
 
 interface Props {
   state: AppState;
@@ -11,16 +20,22 @@ interface Props {
 
 export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
   const [selectedStaffId, setSelectedStaffId] = useState<number | null>(state.staff[0]?.id ?? null);
-  const [clickMode, setClickMode] = useState<'toggle' | 'time' | 'preset'>('toggle');
+  const [clickMode, setClickMode] = useState<'toggle' | 'preset' | 'pattern' | 'time'>('toggle');
   const [presetType, setPresetType] = useState<'有休' | '希望休' | '前休' | '後休'>('前休');
+  const [selectedPatternKey, setSelectedPatternKey] = useState<string>(
+    state.shiftPatterns[0]?.key || ''
+  );
   const [timeStart, setTimeStart] = useState('09:00');
   const [timeEnd, setTimeEnd] = useState('17:00');
 
-  const { year, month, staff, preferences } = state;
+  const { year, month, staff, preferences, shiftPatterns, facility } = state;
   const days = daysInMonth(year, month);
 
   const selectedStaff = staff.find((s) => s.id === selectedStaffId);
   const staffPrefs = selectedStaffId ? preferences[selectedStaffId] || {} : {};
+  const activePatternKey = shiftPatterns.some((p) => p.key === selectedPatternKey)
+    ? selectedPatternKey
+    : shiftPatterns[0]?.key || '';
 
   const handleCellClick = (d: number) => {
     if (!selectedStaffId) {
@@ -30,28 +45,46 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
     onUpdateState((prev) => {
       const prevStaffPrefs = { ...(prev.preferences[selectedStaffId] || {}) };
+      const prevStaffShifts = { ...(prev.shifts[selectedStaffId] || {}) };
+      const targetStaff = prev.staff.find((s) => s.id === selectedStaffId);
+      const facId = targetStaff?.facilityId ?? prev.facility.id;
+      const oldVal = prevStaffPrefs[d];
+      let nextVal: string | undefined = oldVal;
 
       if (clickMode === 'time') {
-        const cur = prevStaffPrefs[d];
-        if (cur && cur.startsWith('time:')) {
+        if (oldVal && oldVal.startsWith('time:')) {
           delete prevStaffPrefs[d];
+          nextVal = undefined;
         } else {
-          prevStaffPrefs[d] = `time:${timeStart}-${timeEnd}`;
+          nextVal = `time:${timeStart}-${timeEnd}`;
+          prevStaffPrefs[d] = nextVal;
         }
       } else if (clickMode === 'preset') {
-        const cur = prevStaffPrefs[d];
-        if (cur === presetType) {
+        if (oldVal === presetType) {
           delete prevStaffPrefs[d];
+          nextVal = undefined;
         } else {
-          prevStaffPrefs[d] = presetType;
+          nextVal = presetType;
+          prevStaffPrefs[d] = nextVal;
+        }
+      } else if (clickMode === 'pattern') {
+        const patKey = prev.shiftPatterns.some((p) => p.key === selectedPatternKey)
+          ? selectedPatternKey
+          : prev.shiftPatterns[0]?.key || '';
+        if (!patKey) return prev;
+        if (oldVal === patKey) {
+          delete prevStaffPrefs[d];
+          nextVal = undefined;
+        } else {
+          nextVal = patKey;
+          prevStaffPrefs[d] = nextVal;
         }
       } else {
         // Toggle Cycle: none -> 有休 -> 希望休 -> 前休 -> 後休 -> none
         const cycle = [undefined, '有休', '希望休', '前休', '後休'];
-        const currentVal = prevStaffPrefs[d];
-        const safeVal = currentVal && currentVal.startsWith('time:') ? undefined : currentVal;
+        const safeVal = oldVal && oldVal.startsWith('time:') ? undefined : oldVal;
         const currentIdx = cycle.indexOf(safeVal);
-        const nextVal = cycle[(currentIdx + 1) % cycle.length];
+        nextVal = cycle[(currentIdx + 1) % cycle.length];
 
         if (!nextVal) {
           delete prevStaffPrefs[d];
@@ -60,11 +93,48 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
         }
       }
 
+      // 希望入力の内容をシフト表にも即座に反映する
+      const totalDays = daysInMonth(prev.year, prev.month);
+      const oldPat = oldVal ? getPatternByKey(oldVal, facId, prev.shiftPatterns) : undefined;
+      const newPat = nextVal ? getPatternByKey(nextVal, facId, prev.shiftPatterns) : undefined;
+
+      if (nextVal) {
+        prevStaffShifts[d] = nextVal;
+        if (newPat && isNight(newPat) && d + 1 <= totalDays && !prevStaffPrefs[d + 1]) {
+          prevStaffShifts[d + 1] = '明け';
+        }
+      } else {
+        if (prevStaffShifts[d] === oldVal) {
+          prevStaffShifts[d] =
+            targetStaff && !isStaffWorkingOnFacilityDay(targetStaff, prev.year, prev.month, d)
+              ? '他事業所'
+              : '公休';
+        }
+      }
+
+      if (
+        oldPat &&
+        isNight(oldPat) &&
+        (!newPat || !isNight(newPat)) &&
+        d + 1 <= totalDays &&
+        !prevStaffPrefs[d + 1] &&
+        prevStaffShifts[d + 1] === '明け'
+      ) {
+        prevStaffShifts[d + 1] =
+          targetStaff && !isStaffWorkingOnFacilityDay(targetStaff, prev.year, prev.month, d + 1)
+            ? '他事業所'
+            : '公休';
+      }
+
       return {
         ...prev,
         preferences: {
           ...prev.preferences,
           [selectedStaffId]: prevStaffPrefs,
+        },
+        shifts: {
+          ...prev.shifts,
+          [selectedStaffId]: prevStaffShifts,
         },
       };
     });
@@ -87,6 +157,8 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
         let added = 0;
         onUpdateState((prev) => {
           const newPrefs = { ...prev.preferences };
+          const newShifts = { ...prev.shifts };
+          const totalDays = daysInMonth(prev.year, prev.month);
 
           rows.slice(1).forEach((cols) => {
             const sName = cols[0]?.trim();
@@ -102,12 +174,25 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
             if (!match) return;
 
             const dayNum = parseInt(match[3], 10);
+            if (dayNum < 1 || dayNum > totalDays) return;
+
+            const matchedPat = getPatternByKey(pType, st.facilityId, prev.shiftPatterns);
+            const resolvedType = matchedPat ? matchedPat.key : pType;
+
             if (!newPrefs[st.id]) newPrefs[st.id] = {};
-            newPrefs[st.id][dayNum] = pType;
+            newPrefs[st.id] = { ...newPrefs[st.id], [dayNum]: resolvedType };
+
+            if (!newShifts[st.id]) newShifts[st.id] = {};
+            newShifts[st.id] = { ...newShifts[st.id], [dayNum]: resolvedType };
+
+            if (matchedPat && isNight(matchedPat) && dayNum + 1 <= totalDays && !newPrefs[st.id][dayNum + 1]) {
+              newShifts[st.id][dayNum + 1] = '明け';
+            }
+
             added++;
           });
 
-          return { ...prev, preferences: newPrefs };
+          return { ...prev, preferences: newPrefs, shifts: newShifts };
         });
 
         alert(`✅ 希望休CSVインポート完了: ${added}件登録`);
@@ -120,12 +205,14 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
   };
 
   // Compile all preferences for summary display
-  const allPrefsList: Array<{ staffName: string; day: number; type: string }> = [];
+  const allPrefsList: Array<{ staffId: number; staffName: string; facilityId: number; day: number; type: string }> = [];
   staff.forEach((s) => {
     const sp = preferences[s.id] || {};
     Object.entries(sp).forEach(([dStr, val]) => {
       allPrefsList.push({
+        staffId: s.id,
         staffName: s.name,
+        facilityId: s.facilityId,
         day: parseInt(dStr, 10),
         type: val,
       });
@@ -143,11 +230,11 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-teal-600" />
+              <Calendar className="w-5 h-5 text-teal-700" />
               <span>希望休・有休・個別勤務時間 入力</span>
             </h2>
             <p className="text-xs text-gray-500 mt-1">
-              職員を選択して日付をクリック。有休・希望休や勤務時間帯をワンクリックで設定
+              職員を選択して日付をクリック。有休・希望休・勤務パターンや勤務時間帯をワンクリックで設定（シフト表へ必ず反映されます）
             </p>
           </div>
 
@@ -188,8 +275,8 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                 onClick={() => setSelectedStaffId(s.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                   selectedStaffId === s.id
-                    ? 'bg-teal-600 text-white shadow-xs'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-teal-700 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 {s.name}
@@ -199,7 +286,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
         </div>
 
         {/* Click Mode Toggle */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-100/80 border border-slate-200 text-xs">
           <div className="flex flex-wrap items-center gap-3">
             <span className="font-bold text-gray-700">カレンダークリック動作：</span>
             <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-800">
@@ -228,6 +315,17 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <input
                 type="radio"
                 name="prefClickMode"
+                value="pattern"
+                checked={clickMode === 'pattern'}
+                onChange={() => setClickMode('pattern')}
+                className="w-4 h-4 text-blue-600"
+              />
+              <span>シフトパターン指定</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-800">
+              <input
+                type="radio"
+                name="prefClickMode"
                 value="time"
                 checked={clickMode === 'time'}
                 onChange={() => setClickMode('time')}
@@ -238,7 +336,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
           </div>
 
           {clickMode === 'preset' && (
-            <div className="flex items-center gap-1.5 animate-in fade-in">
+            <div className="flex flex-wrap items-center gap-1.5 animate-in fade-in">
               <span className="text-gray-500 font-bold">選択項目:</span>
               <button
                 type="button"
@@ -284,6 +382,39 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               >
                 希望休
               </button>
+            </div>
+          )}
+
+          {clickMode === 'pattern' && (
+            <div className="flex flex-wrap items-center gap-1.5 animate-in fade-in w-full pt-2 border-t border-slate-200/80">
+              <span className="text-gray-600 font-bold mr-1">シフトパターン:</span>
+              {shiftPatterns.length === 0 ? (
+                <span className="text-amber-700 font-semibold">
+                  「シフト設定」タブでパターンが登録されていません
+                </span>
+              ) : (
+                shiftPatterns.map((p) => {
+                  const isSelected = activePatternKey === p.key;
+                  return (
+                    <button
+                      type="button"
+                      key={p.id}
+                      onClick={() => setSelectedPatternKey(p.key)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer inline-flex items-center gap-1.5 shadow-2xs ${
+                        isSelected
+                          ? 'ring-2 ring-teal-700 ring-offset-1 scale-105 opacity-100'
+                          : 'opacity-80 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: p.color, color: '#ffffff' }}
+                    >
+                      <span>{p.key}</span>
+                      <span className="text-[10px] font-medium opacity-95">
+                        ({p.name} {p.start}〜{p.end})
+                      </span>
+                    </button>
+                  );
+                })
+              )}
             </div>
           )}
 
@@ -344,6 +475,17 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               </span>
               <span>後休(4h)</span>
             </span>
+            {shiftPatterns.map((p) => (
+              <span key={p.id} className="inline-flex items-center gap-1">
+                <span
+                  className="px-1 min-w-4 h-4 rounded text-white text-[10px] font-black flex items-center justify-center"
+                  style={{ backgroundColor: p.color }}
+                >
+                  {p.key}
+                </span>
+                <span>{p.name}</span>
+              </span>
+            ))}
             <span className="inline-flex items-center gap-1">
               <span className="w-4 h-4 rounded bg-cyan-600 text-white text-[10px] font-black flex items-center justify-center">
                 ⏰
@@ -368,7 +510,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
           {/* Empty cells before month day 1 */}
           {Array.from({ length: firstDayDow }).map((_, i) => (
-            <div key={`empty-${i}`} className="min-h-[70px] bg-gray-50/50 rounded-xl" />
+            <div key={`empty-${i}`} className="min-h-[70px] bg-slate-100/70 rounded-xl" />
           ))}
 
           {/* Month Days */}
@@ -378,19 +520,31 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
             const timeVal = val ? parseTimeVal(val) : null;
             const isMae = val === '前休' || val === '午前休';
             const isAto = val === '後休' || val === '午後休';
+            const matchedPat =
+              val && !timeVal && !isMae && !isAto && val !== '有休' && val !== '希望休'
+                ? getPatternByKey(val, selectedStaff?.facilityId ?? facility.id, shiftPatterns)
+                : undefined;
 
-            let bgClass = 'bg-white hover:border-blue-400';
-            if (val === '有休') bgClass = 'bg-emerald-50 border-emerald-300';
-            else if (val === '希望休') bgClass = 'bg-amber-50 border-amber-300';
-            else if (isMae) bgClass = 'bg-teal-50 border-teal-300';
-            else if (isAto) bgClass = 'bg-sky-50 border-sky-300';
-            else if (timeVal) bgClass = 'bg-cyan-50 border-cyan-300';
+            let bgClass = 'bg-white hover:border-teal-400';
+            if (val === '有休') bgClass = 'bg-emerald-100/75 border-emerald-300';
+            else if (val === '希望休') bgClass = 'bg-amber-100/75 border-amber-300';
+            else if (isMae) bgClass = 'bg-teal-100/75 border-teal-300';
+            else if (isAto) bgClass = 'bg-sky-100/75 border-sky-300';
+            else if (timeVal) bgClass = 'bg-cyan-100/75 border-cyan-300';
+
+            const cellStyle = matchedPat
+              ? {
+                  backgroundColor: `${matchedPat.color}18`,
+                  borderColor: `${matchedPat.color}88`,
+                }
+              : undefined;
 
             return (
               <div
                 key={d}
                 onClick={() => handleCellClick(d)}
-                className={`min-h-[70px] p-2 rounded-xl border border-gray-200 transition-all cursor-pointer flex flex-col justify-between ${bgClass}`}
+                style={cellStyle}
+                className={`min-h-[70px] p-2 rounded-xl border border-slate-200 transition-all cursor-pointer flex flex-col justify-between ${bgClass}`}
               >
                 <div className="flex items-center justify-between">
                   <span
@@ -430,6 +584,30 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                       後休 (4h)
                     </div>
                   )}
+                  {matchedPat && (
+                    <div
+                      className="px-1.5 py-0.5 rounded-md text-white font-black text-center text-xs shadow-2xs"
+                      style={{ backgroundColor: matchedPat.color }}
+                    >
+                      <div className="truncate">
+                        {matchedPat.key} ({matchedPat.name})
+                      </div>
+                      <div className="text-[9px] font-bold opacity-90 leading-tight">
+                        {matchedPat.start}〜{matchedPat.end}
+                      </div>
+                    </div>
+                  )}
+                  {!matchedPat &&
+                    val &&
+                    val !== '有休' &&
+                    val !== '希望休' &&
+                    !isMae &&
+                    !isAto &&
+                    !timeVal && (
+                      <div className="px-2 py-0.5 rounded-md bg-slate-600 text-white font-black text-center text-xs">
+                        {val}
+                      </div>
+                    )}
                   {timeVal && (
                     <div className="px-1.5 py-0.5 rounded-md bg-cyan-600 text-white font-bold text-center text-[10px]">
                       {timeVal.start}〜{timeVal.end}
@@ -454,6 +632,10 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
             {allPrefsList.map((p, idx) => {
               const isMae = p.type === '前休' || p.type === '午前休';
               const isAto = p.type === '後休' || p.type === '午後休';
+              const matchedPat =
+                !isMae && !isAto && p.type !== '有休' && p.type !== '希望休' && !p.type.startsWith('time:')
+                  ? getPatternByKey(p.type, p.facilityId, shiftPatterns)
+                  : undefined;
 
               let badgeClass = 'bg-cyan-100 text-cyan-800';
               if (p.type === '有休') badgeClass = 'bg-emerald-100 text-emerald-800';
@@ -462,16 +644,27 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               else if (isAto) badgeClass = 'bg-sky-100 text-sky-800';
 
               return (
-                <div
+                <button
+                  type="button"
                   key={idx}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-800"
+                  onClick={() => setSelectedStaffId(p.staffId)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-800 transition cursor-pointer"
                 >
                   <span>{p.staffName}</span>
                   <span className="text-gray-400">({month}/{p.day}日)</span>
-                  <span className={`px-1.5 py-0.5 rounded-md font-bold text-[11px] ${badgeClass}`}>
-                    {isMae ? '前休 (4h)' : isAto ? '後休 (4h)' : p.type}
-                  </span>
-                </div>
+                  {matchedPat ? (
+                    <span
+                      className="px-1.5 py-0.5 rounded-md font-bold text-[11px] text-white"
+                      style={{ backgroundColor: matchedPat.color }}
+                    >
+                      {matchedPat.key} ({matchedPat.name})
+                    </span>
+                  ) : (
+                    <span className={`px-1.5 py-0.5 rounded-md font-bold text-[11px] ${badgeClass}`}>
+                      {isMae ? '前休 (4h)' : isAto ? '後休 (4h)' : p.type}
+                    </span>
+                  )}
+                </button>
               );
             })}
           </div>
@@ -480,3 +673,4 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
     </div>
   );
 };
+

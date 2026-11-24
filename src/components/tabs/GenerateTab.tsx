@@ -174,7 +174,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-teal-600 via-teal-500 to-sky-500 rounded-3xl p-8 text-white shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-r from-teal-700 via-teal-600 to-sky-600 rounded-3xl p-8 text-white shadow-md relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 opacity-15 flex items-center pr-10 pointer-events-none">
           <Sparkles className="w-80 h-80" />
         </div>
@@ -231,7 +231,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 ・${s1}　夜勤は週1回のみ
 ・${s3}　毎週木曜日出勤(日)
 ・${s2}は必ず週所定労働時間数は入れて`}
-          className="w-full px-4 py-3 rounded-xl border border-teal-200 text-sm focus:border-teal-600 focus:ring-2 focus:ring-teal-100 outline-hidden font-medium leading-relaxed bg-teal-50/20"
+          className="w-full px-4 py-3 rounded-xl border border-teal-300 text-sm focus:border-teal-700 focus:ring-2 focus:ring-teal-200 outline-hidden font-medium leading-relaxed bg-teal-50/45"
         />
 
         {/* Quick Sample Instruction Chips */}
@@ -249,7 +249,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               onClick={() => {
                 setInstructionText((prev) => (prev ? `${prev}\n${sample}` : sample));
               }}
-              className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 text-[11px] font-medium transition cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-teal-100/70 hover:bg-teal-200/70 border border-teal-300 text-teal-800 text-[11px] font-medium transition cursor-pointer"
             >
               + {sample.replace(/^・/, '')}
             </button>
@@ -261,7 +261,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <button
               onClick={handleInterpret}
               disabled={isInterpreting}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>{isInterpreting ? 'AIが解釈中...' : '🤖 AIで指示を解釈・ルール登録'}</span>
@@ -277,7 +277,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
         {/* Parsed Rules Display */}
         {state.parsedRules.length > 0 && (
-          <div className="mt-5 p-4 rounded-xl bg-teal-50/70 border border-teal-200 space-y-3">
+          <div className="mt-5 p-4 rounded-xl bg-teal-100/60 border border-teal-300 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-bold text-teal-900 text-xs flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-600" />
@@ -433,7 +433,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
           <div className="max-w-md mx-auto space-y-2 animate-in fade-in">
             <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden p-0.5 border border-gray-200">
               <div
-                className="h-full bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-teal-600 via-cyan-600 to-sky-600 rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -447,7 +447,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
         <button
           onClick={handleRunGenerate}
           disabled={isGenerating}
-          className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-teal-600 via-teal-500 to-sky-500 hover:from-teal-700 hover:via-teal-600 hover:to-sky-600 text-white font-black text-base shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer tracking-wider"
+          className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-teal-700 via-teal-600 to-sky-600 hover:from-teal-800 hover:via-teal-700 hover:to-sky-700 text-white font-black text-base shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer tracking-wider"
         >
           <Play className="w-5 h-5 fill-current" />
           <span>{isGenerating ? 'AIが生成中...' : '🚀 AIシフトを自動生成する'}</span>

@@ -199,10 +199,10 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-5">
         <div className="flex items-center justify-between pb-3 border-b border-gray-100 flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <Save className="w-5 h-5 text-blue-600" />
+            <Save className="w-5 h-5 text-teal-700" />
             <h3 className="font-bold text-gray-900 text-base">データのバックアップ & 復元</h3>
           </div>
-          <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-200">
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 font-bold border border-teal-300">
             PC / USBメモリ対応
           </span>
         </div>
@@ -217,7 +217,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <button
             onClick={handleBackupClick}
             disabled={isProcessing}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
             title="バックアップファイルを保存します"
           >
             <Save className="w-4 h-4" />
@@ -228,7 +228,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <button
             onClick={handleRestore}
             disabled={isProcessing}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-700 hover:bg-sky-800 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
             title="バックアップファイルを選択して現在のデータを復元します"
           >
             <FolderOpen className="w-4 h-4" />
@@ -265,8 +265,8 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
         )}
 
         {/* Backup Destination Notice */}
-        <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium flex items-center gap-2">
-          <Info className="w-4 h-4 text-blue-600 shrink-0" />
+        <div className="p-3.5 bg-teal-50/80 border border-teal-200 rounded-xl text-xs text-slate-700 font-medium flex items-center gap-2">
+          <Info className="w-4 h-4 text-teal-700 shrink-0" />
           <span>バックアップの保存先は、「Download」フォルダ</span>
         </div>
       </div>
@@ -274,7 +274,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
       {/* Local Storage Slot Setting */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-4">
         <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-          <HardDrive className="w-5 h-5 text-blue-600" />
+          <HardDrive className="w-5 h-5 text-teal-700" />
           <h3 className="font-bold text-gray-900 text-base">ブラウザ内蔵自動保存スロット</h3>
         </div>
         <p className="text-xs text-gray-600 leading-relaxed">
@@ -305,12 +305,12 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
         </div>
 
         <div className="space-y-4 text-xs sm:text-sm">
-          <div className="p-4 bg-gradient-to-r from-teal-50 to-sky-50 border border-teal-200 rounded-xl space-y-2 text-xs text-teal-900">
-            <div className="flex items-center gap-2 font-bold text-teal-900">
-              <Server className="w-4.5 h-4.5 text-teal-600 shrink-0" />
+          <div className="p-4 bg-gradient-to-r from-teal-100/80 to-sky-100/80 border border-teal-300 rounded-xl space-y-2 text-xs text-teal-950">
+            <div className="flex items-center gap-2 font-bold text-teal-950">
+              <Server className="w-4.5 h-4.5 text-teal-700 shrink-0" />
               <span>クライアントサイド・AIエンジン統合稼働中（完全無料・サーバーレス対応）</span>
             </div>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-slate-700 leading-relaxed">
               自然言語による個別指示の解析やコンプライアンス診断は、ローカルのスマートAIエンジンおよびサーバーレス環境で安全に動作します。
             </p>
           </div>
@@ -322,7 +322,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
             <select
               value={geminiModel}
               onChange={(e) => setGeminiModel(e.target.value)}
-              className="w-full max-w-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-700 focus:border-teal-600 outline-hidden"
+              className="w-full max-w-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-700 focus:border-teal-700 outline-hidden"
             >
               <option value="gemini-3.8-flash">gemini-3.8-flash (推奨・高速高精度)</option>
               <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (軽量)</option>
@@ -332,7 +332,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               onClick={handleSaveAIConfig}
-              className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
             >
               設定を保存する
             </button>
@@ -340,9 +340,9 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
             <button
               onClick={handleTestConnection}
               disabled={testing}
-              className="px-4 py-2.5 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-xl border border-sky-300 bg-sky-100/70 hover:bg-sky-200/70 text-sky-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
             >
-              <Sparkles className="w-4 h-4 text-sky-600" />
+              <Sparkles className="w-4 h-4 text-sky-700" />
               <span>{testing ? '接続テスト中...' : '🔌 API接続テスト'}</span>
             </button>
 

@@ -337,7 +337,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
   return (
     <div className="space-y-4">
       {/* Action Header */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-xs px-4 py-2 ml-0 -mt-3 !mb-[9px] flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">{fcType?.icon || '🏢'}</span>
@@ -394,11 +394,11 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
 
           {/* Display Mode toggle */}
-          <div className="flex rounded-xl border border-gray-200 overflow-hidden text-xs font-bold bg-white">
+          <div className="flex rounded-xl border border-slate-300 overflow-hidden text-xs font-bold bg-white">
             <button
               onClick={() => setDispMode('key')}
               className={`px-3 py-1.5 transition cursor-pointer ${
-                dispMode === 'key' ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+                dispMode === 'key' ? 'bg-teal-700 text-white' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
               記号表示
@@ -406,7 +406,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <button
               onClick={() => setDispMode('time')}
               className={`px-3 py-1.5 transition cursor-pointer ${
-                dispMode === 'time' ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+                dispMode === 'time' ? 'bg-teal-700 text-white' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
               時間表示
@@ -447,8 +447,8 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             onClick={() => setIsStampEditMode(!isStampEditMode)}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-xs transition cursor-pointer ${
               isStampEditMode
-                ? 'bg-sky-600 text-white ring-2 ring-sky-300 shadow-md'
-                : 'bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200'
+                ? 'bg-sky-700 text-white ring-2 ring-sky-300 shadow-md'
+                : 'bg-sky-100 text-sky-800 hover:bg-sky-200/80 border border-sky-300'
             }`}
             title="クリックで即座に入力できるスタンプ編集画面を開く"
           >
@@ -459,7 +459,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
           <button
             onClick={handleQuickReGenerate}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
             title="固定されていない職員のシフトを再生成"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -479,10 +479,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
       {/* Quick Stamp Edit Palette Toolbar (when isStampEditMode is active) */}
       {isStampEditMode && (
-        <div className="bg-gradient-to-r from-teal-50 via-sky-50 to-cyan-50 rounded-2xl border-2 border-sky-300 p-4 shadow-sm animate-in fade-in space-y-3">
+        <div className="bg-gradient-to-r from-teal-100/80 via-sky-100/80 to-cyan-100/80 rounded-2xl border-2 border-sky-400 p-4 shadow-sm animate-in fade-in space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-sky-600 text-white rounded-lg">
+              <span className="p-1.5 bg-sky-700 text-white rounded-lg">
                 <Pencil className="w-4 h-4" />
               </span>
               <div>
@@ -572,7 +572,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       )}
 
       {/* Legend Box */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-3.5">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-xs px-3.5 py-[10px] !mt-0">
         <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-gray-700">
           <span className="text-gray-400 font-bold">凡例:</span>
           {shiftPatterns.map((p) => {
@@ -646,18 +646,18 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       </div>
 
       {/* Main Shift Table */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-300/80 shadow-sm overflow-hidden">
         <div className="overflow-x-auto max-h-[75vh]">
           <table className="w-full text-center border-collapse text-xs select-none">
-            <thead className="sticky top-0 z-30 bg-gray-50/95 backdrop-blur-xs border-b border-gray-200 shadow-xs">
+            <thead className="sticky top-0 z-30 bg-slate-100/95 backdrop-blur-xs border-b border-slate-300 shadow-xs">
               <tr>
-                <th className="py-2.5 px-2 w-8 border-r border-gray-200 sticky left-0 z-40 bg-gray-100 text-gray-500 font-bold">
+                <th className="py-2.5 px-2 w-8 border-r border-slate-200 sticky left-0 z-40 bg-slate-200/80 text-slate-600 font-bold">
                   🔒
                 </th>
-                <th className="py-2.5 px-3 min-w-[110px] max-w-[130px] text-left border-r border-gray-200 sticky left-8 z-40 bg-gray-100 font-bold text-gray-700">
+                <th className="py-2.5 px-3 min-w-[110px] max-w-[130px] text-left border-r border-slate-200 sticky left-8 z-40 bg-slate-200/80 font-bold text-slate-700">
                   氏名
                 </th>
-                <th className="py-2.5 px-3 min-w-[110px] max-w-[140px] text-left border-r-2 border-gray-200 sticky left-[142px] z-40 bg-gray-100 font-bold text-gray-700">
+                <th className="py-2.5 px-3 min-w-[110px] max-w-[140px] text-left border-r-2 border-slate-300 sticky left-[142px] z-40 bg-slate-200/80 font-bold text-slate-700">
                   職種
                 </th>
                 {Array.from({ length: days }, (_, i) => i + 1).map((d) => {
@@ -703,13 +703,13 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                     </th>
                   );
                 })}
-                <th className="py-2.5 px-2 min-w-[55px] font-black text-sky-700 bg-sky-50/60 border-r border-gray-200">
+                <th className="py-2.5 px-2 min-w-[55px] font-black text-sky-800 bg-sky-100/80 border-r border-slate-200">
                   総実労働h
                 </th>
-                <th className="py-2.5 px-2 min-w-[50px] font-bold text-gray-700 bg-gray-50 border-r border-gray-200">
+                <th className="py-2.5 px-2 min-w-[50px] font-bold text-slate-700 bg-slate-100 border-r border-slate-200">
                   週平均
                 </th>
-                <th className="py-2.5 px-2 min-w-[55px] font-bold text-teal-700 bg-teal-50/50">
+                <th className="py-2.5 px-2 min-w-[55px] font-bold text-teal-800 bg-teal-100/80">
                   常勤換算
                 </th>
               </tr>
@@ -909,7 +909,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                             }`}
                           >
                             {isNightOff ? (
-                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-sky-200 via-sky-100 to-teal-50 text-sky-900 font-black text-xs shadow-inner">
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-sky-300 via-sky-200 to-teal-100 text-sky-950 font-black text-xs shadow-inner">
                                 <span>明</span>
                               </div>
                             ) : isOtherFacShift ? (
@@ -1124,15 +1124,15 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               )}
 
               {/* FTE Total Row */}
-              <tr className="bg-teal-50/90 font-black text-xs text-teal-950 border-t-2 border-teal-200">
-                <td className="sticky left-0 bg-teal-50 border-r border-gray-200"></td>
-                <td colSpan={2} className="py-2 px-3 text-left sticky left-8 bg-teal-50 border-r-2 border-teal-200 whitespace-nowrap">
+              <tr className="bg-teal-100/85 font-black text-xs text-teal-950 border-t-2 border-teal-300">
+                <td className="sticky left-0 bg-teal-100 border-r border-slate-200"></td>
+                <td colSpan={2} className="py-2 px-3 text-left sticky left-8 bg-teal-100 border-r-2 border-teal-300 whitespace-nowrap">
                   📊 常勤換算（FTE）合計
                 </td>
-                <td colSpan={days} className="border-r border-gray-200 text-center font-bold text-gray-500 text-[11px] bg-white">
+                <td colSpan={days} className="border-r border-slate-200 text-center font-bold text-slate-600 text-[11px] bg-slate-50">
                   （全職員合計）
                 </td>
-                <td className="py-2 px-1 text-right font-black text-sky-700 bg-sky-50/60 border-r border-gray-200 whitespace-nowrap">
+                <td className="py-2 px-1 text-right font-black text-sky-800 bg-sky-100/80 border-r border-slate-200 whitespace-nowrap">
                   {staff.reduce((sum, s) => {
                     const sTotalH = Object.entries(shifts[s.id] || {}).reduce((hSum, [dStr, k]) => {
                       const d = parseInt(dStr, 10);
@@ -1141,10 +1141,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                     return sum + sTotalH;
                   }, 0).toFixed(1)}h
                 </td>
-                <td className="py-2 px-1 text-right font-bold text-gray-700 bg-gray-50/60 border-r border-gray-200 whitespace-nowrap">
+                <td className="py-2 px-1 text-right font-bold text-slate-700 bg-slate-100 border-r border-slate-200 whitespace-nowrap">
                   -
                 </td>
-                <td className="py-2 px-2 text-right font-black text-teal-700 bg-teal-100 whitespace-nowrap text-sm">
+                <td className="py-2 px-2 text-right font-black text-teal-800 bg-teal-200/80 whitespace-nowrap text-sm">
                   {staff.reduce((sum, s) => {
                     const sTotalH = Object.entries(shifts[s.id] || {}).reduce((hSum, [dStr, k]) => {
                       const d = parseInt(dStr, 10);

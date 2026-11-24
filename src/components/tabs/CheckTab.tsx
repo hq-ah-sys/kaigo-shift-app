@@ -59,9 +59,9 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
       </div>
 
       {/* Compliance Rule Explanatory Banner */}
-      <div className="bg-gradient-to-r from-teal-50 to-sky-50 rounded-2xl border border-teal-200 p-4">
+      <div className="bg-gradient-to-r from-teal-100/80 to-sky-100/80 rounded-2xl border border-teal-300 p-4">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-teal-600 text-white shrink-0 mt-0.5">
+          <div className="p-2 rounded-xl bg-teal-700 text-white shrink-0 mt-0.5">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div className="space-y-1 text-xs">
@@ -144,7 +144,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
           <button
             onClick={handleRunAiAudit}
             disabled={isAuditing}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-700 hover:to-sky-700 text-white font-bold text-xs shadow-xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-700 to-sky-700 hover:from-teal-800 hover:to-sky-800 text-white font-bold text-xs shadow-xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {isAuditing ? (
               <>
@@ -161,7 +161,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
         </div>
 
         {aiReport ? (
-          <div className="p-5 rounded-2xl bg-teal-50/60 border border-teal-200 text-gray-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
+          <div className="p-5 rounded-2xl bg-teal-100/60 border border-teal-300 text-gray-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
             {aiReport}
           </div>
         ) : (
@@ -181,7 +181,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
+              <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
                 <th className="py-3 px-4">氏名</th>
                 <th className="py-3 px-3">職種</th>
                 <th className="py-3 px-3">専従/兼務</th>

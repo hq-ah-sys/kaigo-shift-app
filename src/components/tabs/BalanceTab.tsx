@@ -67,7 +67,7 @@ export const BalanceTab: React.FC<Props> = ({ state }) => {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-600">
+            <div className="p-2.5 rounded-xl bg-teal-100/80 border border-teal-300 text-teal-700">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
@@ -101,7 +101,7 @@ export const BalanceTab: React.FC<Props> = ({ state }) => {
                   {st.day}日 ({st.dow})
                 </div>
 
-                <div className="flex-1 bg-gray-100 rounded-lg h-6 flex overflow-hidden p-0.5 gap-0.5 border border-gray-200">
+                <div className="flex-1 bg-slate-200/70 rounded-lg h-6 flex overflow-hidden p-0.5 gap-0.5 border border-slate-300/70">
                   {hasWorkers ? (
                     st.workingStaff.map((ws, i) => (
                       <div
@@ -179,7 +179,7 @@ export const BalanceTab: React.FC<Props> = ({ state }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
+              <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
                 <th className="py-3 px-4">氏名</th>
                 <th className="py-3 px-3">スキル</th>
                 <th className="py-3 px-3 text-center">出勤日数</th>
@@ -211,7 +211,7 @@ export const BalanceTab: React.FC<Props> = ({ state }) => {
                     <td className="py-3 px-3 text-amber-600 font-bold">{MAT_STARS[s.mat || 3]}</td>
                     <td className="py-3 px-3 text-center font-bold text-gray-800">{wCount}日</td>
                     <td className="py-3 px-3 text-center font-bold text-emerald-600">{pCount}日</td>
-                    <td className="py-3 px-3 text-center font-black text-blue-700">{totH.toFixed(1)}h</td>
+                    <td className="py-3 px-3 text-center font-black text-sky-800">{totH.toFixed(1)}h</td>
                     <td className="py-3 px-3 text-center font-bold text-gray-700">{weekAvg}h</td>
                   </tr>
                 );

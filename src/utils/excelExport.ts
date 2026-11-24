@@ -9,8 +9,9 @@ import {
   getPatternByKey,
   parseTimeVal,
   isNight,
+  isWorkShift,
 } from './shiftEngine';
-import { SPECIAL_SHIFTS } from '../constants';
+import { SP_SHORT } from '../constants';
 import { computeStaffSummaries, runFacilityChecks } from './complianceEngine';
 
 // Helper to convert hex colors to ExcelJS ARGB hex string (AARRGGBB)
@@ -70,7 +71,7 @@ const doubleBottomBorder: Partial<ExcelJS.Borders> = {
 
 // Styling definitions for shift badge cells
 interface ShiftStyle {
-  bgArgb: string;
+  bgArgb: string | null;
   fgArgb: string;
   bold: boolean;
   fontSize?: number;
@@ -78,49 +79,49 @@ interface ShiftStyle {
 
 function getShiftCellStyle(key: string, patterns: ShiftPattern[]): ShiftStyle {
   if (key === '早') {
-    return { bgArgb: 'FFFEF3C7', fgArgb: 'FF92400E', bold: true, fontSize: 10 }; // Amber
+    return { bgArgb: 'FFFEF3C7', fgArgb: 'FF92400E', bold: true, fontSize: 10.5 }; // Amber
   }
   if (key === '日') {
-    return { bgArgb: 'FFDBEAFE', fgArgb: 'FF1E40AF', bold: true, fontSize: 10 }; // Blue
+    return { bgArgb: 'FFDBEAFE', fgArgb: 'FF1E40AF', bold: true, fontSize: 10.5 }; // Blue
   }
   if (key === '遅') {
-    return { bgArgb: 'FFEDE9FE', fgArgb: 'FF5B21B6', bold: true, fontSize: 10 }; // Purple
+    return { bgArgb: 'FFEDE9FE', fgArgb: 'FF5B21B6', bold: true, fontSize: 10.5 }; // Purple
   }
   if (key === '夜') {
-    return { bgArgb: 'FF1E293B', fgArgb: 'FFFFFFFF', bold: true, fontSize: 10 }; // Dark slate + white text
+    return { bgArgb: 'FF1E293B', fgArgb: 'FFFFFFFF', bold: true, fontSize: 10.5 }; // Dark slate + white text
   }
   if (key === '明' || key === '明け') {
-    return { bgArgb: 'FFBAE6FD', fgArgb: 'FF0369A1', bold: true, fontSize: 10 }; // Sky blue
+    return { bgArgb: 'FFBAE6FD', fgArgb: 'FF0369A1', bold: true, fontSize: 10.5 }; // Sky blue
   }
   if (key === '有' || key === '有休') {
-    return { bgArgb: 'FFD1FAE5', fgArgb: 'FF065F46', bold: true, fontSize: 10 }; // Emerald green
+    return { bgArgb: 'FFD1FAE5', fgArgb: 'FF065F46', bold: true, fontSize: 10.5 }; // Emerald green
   }
   if (key === '希' || key === '希望休') {
-    return { bgArgb: 'FFFFEDD5', fgArgb: 'FF9A3412', bold: true, fontSize: 10 }; // Light orange
+    return { bgArgb: 'FFFFEDD5', fgArgb: 'FF9A3412', bold: true, fontSize: 10.5 }; // Light orange
   }
   if (key === '休' || key === '公休') {
-    return { bgArgb: 'FFF1F5F9', fgArgb: 'FF64748B', bold: true, fontSize: 10 }; // Muted slate
+    return { bgArgb: 'FFF1F5F9', fgArgb: 'FF64748B', bold: false, fontSize: 10 }; // Muted slate
   }
   if (key === '他' || key === '他事業所') {
-    return { bgArgb: 'FFE2E8F0', fgArgb: 'FF334155', bold: true, fontSize: 10 }; // Neutral gray
+    return { bgArgb: null, fgArgb: 'FF475569', bold: false, fontSize: 10 }; // 色無し・強調文字無し
   }
   if (key === '午前休' || key === '前休') {
-    return { bgArgb: 'FFCCFBF1', fgArgb: 'FF0F766E', bold: true, fontSize: 10 }; // Teal
+    return { bgArgb: 'FFCCFBF1', fgArgb: 'FF0F766E', bold: true, fontSize: 9 }; // Teal
   }
   if (key === '午後休' || key === '後休') {
-    return { bgArgb: 'FFE0F2FE', fgArgb: 'FF0369A1', bold: true, fontSize: 10 }; // Sky
+    return { bgArgb: 'FFE0F2FE', fgArgb: 'FF0369A1', bold: true, fontSize: 9 }; // Sky
   }
   if (key === '時間' || key.startsWith('time:')) {
-    return { bgArgb: 'FFEDE9FE', fgArgb: 'FF581C87', bold: true, fontSize: 8 }; // Distinct purple for custom time shifts
+    return { bgArgb: 'FFEDE9FE', fgArgb: 'FF581C87', bold: true, fontSize: 7.5 }; // Distinct purple for custom time shifts
   }
 
   // Check custom pattern
-  const pat = patterns.find((p) => p.key === key);
+  const pat = patterns.find((p) => p.key === key || p.name === key);
   if (pat && pat.color) {
-    return { bgArgb: toArgb(pat.color), fgArgb: 'FFFFFFFF', bold: true, fontSize: 9.5 };
+    return { bgArgb: toArgb(pat.color), fgArgb: 'FFFFFFFF', bold: true, fontSize: 10 };
   }
 
-  return { bgArgb: 'FFFFFFFF', fgArgb: 'FF334155', bold: false, fontSize: 9.5 };
+  return { bgArgb: null, fgArgb: 'FF334155', bold: false, fontSize: 10 };
 }
 
 export async function exportShiftCalendarToExcel(state: AppState): Promise<void> {
@@ -174,14 +175,14 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
   ];
   const totalCols = dayEndCol + sumCols.length;
 
-  // Set column widths
-  ws.getColumn(1).width = 4.2; // No
-  ws.getColumn(2).width = 15.0; // 氏名
+  // Set column widths (基本1文字化に伴い、A4横1ページ印刷時の視認性を最適化)
+  ws.getColumn(1).width = 3.8; // No
+  ws.getColumn(2).width = 13.5; // 氏名
   for (let c = dayStartCol; c <= dayEndCol; c++) {
-    ws.getColumn(c).width = 6.4; // 日付列（職種・形態列の削除に伴い広めの幅を確保し、時間勤務の視認性を向上）
+    ws.getColumn(c).width = 5.2; // 日付列（1文字表示＋時間指定2行表示に最適な幅）
   }
   sumCols.forEach((sc, idx) => {
-    ws.getColumn(dayEndCol + 1 + idx).width = sc.width;
+    ws.getColumn(dayEndCol + 1 + idx).width = 5.2;
   });
 
   // -------------------------------------------------------------------------
@@ -361,28 +362,39 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
         }
       }
 
-      // Format display symbol (時間勤務は2行で見やすく表記、「他事業所」は「他」と表記)
+      // Format display symbol: シフト表タブと同様に基本1文字で表し、半日休暇（前休・後休）と時間指定は除外
       let dispSymbol = rawVal;
-      if (rawVal === '他事業所') {
+      if (rawVal === '他事業所' || rawVal === '他') {
         dispSymbol = '他';
+      } else if (rawVal === '午前休' || rawVal === '前休') {
+        dispSymbol = '前休';
+      } else if (rawVal === '午後休' || rawVal === '後休') {
+        dispSymbol = '後休';
       } else if (rawVal.startsWith('time:')) {
         const tv = parseTimeVal(rawVal);
         dispSymbol = tv ? `${tv.start}\n~${tv.end}` : rawVal.replace('time:', '');
+      } else if (SP_SHORT[rawVal]) {
+        dispSymbol = SP_SHORT[rawVal];
+      } else {
+        const pat = getPatternByKey(rawVal, s.facilityId, shiftPatterns);
+        dispSymbol = pat ? pat.key : rawVal;
       }
 
       const style = getShiftCellStyle(rawVal, shiftPatterns);
       cell.value = dispSymbol;
       cell.font = {
         name: 'Meiryo',
-        size: style.fontSize || 9.5,
+        size: style.fontSize || 10,
         bold: style.bold,
         color: { argb: style.fgArgb },
       };
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: style.bgArgb },
-      };
+      if (style.bgArgb) {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: style.bgArgb },
+        };
+      }
       cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
       cell.border = thinSlateBorder;
     }
@@ -419,8 +431,8 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
   // 早番人数・日勤人数・遅番人数・夜勤人数の行を削除し、日中出勤・総出勤のみ表示
   // -------------------------------------------------------------------------
   const breakdownRows = [
-    { label: '日中出勤人数', isDayTotal: true, bg: 'FFDBEAFE', textArgb: 'FF1E3A8A', isBold: true },
-    { label: '1日総出勤人数', isGrandTotal: true, bg: 'FFE0E7FF', textArgb: 'FF312E81', isBold: true },
+    { label: '日中出勤人数', isDayTotal: true, textArgb: 'FF1E3A8A', isBold: true },
+    { label: '1日総出勤人数', isGrandTotal: true, textArgb: 'FF312E81', isBold: true },
   ];
 
   breakdownRows.forEach((br, bIdx) => {
@@ -436,7 +448,6 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
       bold: br.isBold || false,
       color: { argb: br.textArgb },
     };
-    labelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: br.bg } };
     labelCell.alignment = { vertical: 'middle', horizontal: 'right', indent: 1 };
 
     const borderStyle = br.isGrandTotal ? doubleBottomBorder : bIdx === 0 ? totalTopBorder : thinSlateBorder;
@@ -451,18 +462,23 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
       staff.forEach((s) => {
         const k = shifts[s.id]?.[d] || '公休';
         if (br.isDayTotal) {
-          // Daytime work shift (早, 日, 遅 or custom daytime time)
-          if (k === '早' || k === '日' || k === '遅') {
+          // Daytime work shift (早, 日, 遅, 半日休, カスタム日勤パターン, 時間指定)
+          if (k === '早' || k === '日' || k === '遅' || k === '前休' || k === '午前休' || k === '後休' || k === '午後休') {
             count++;
           } else if (k.startsWith('time:')) {
             const tv = parseTimeVal(k);
             if (tv && tv.start >= '06:00' && tv.start < '18:00') {
               count++;
             }
+          } else {
+            const pat = getPatternByKey(k, s.facilityId, shiftPatterns);
+            if (pat && !isNight(pat)) {
+              count++;
+            }
           }
         } else if (br.isGrandTotal) {
           // Any working shift
-          if (!SPECIAL_SHIFTS.includes(k as any)) {
+          if (isWorkShift(k)) {
             count++;
           }
         }
@@ -476,7 +492,6 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
         bold: br.isBold || false,
         color: { argb: br.textArgb },
       };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: br.bg } };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
       cell.border = borderStyle;
     }
@@ -486,7 +501,6 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
       const colIdx = dayEndCol + 1 + idx;
       const cell = ws.getCell(currentRow, colIdx);
       cell.value = '';
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: br.bg } };
       cell.border = borderStyle;
     });
 
@@ -542,8 +556,10 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
     // Key
     const kCell = ws.getCell(currentRow, 1);
     kCell.value = p.key;
-    kCell.font = { name: 'Meiryo', size: 9, bold: true, color: { argb: style.fgArgb } };
-    kCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: style.bgArgb } };
+    kCell.font = { name: 'Meiryo', size: 9, bold: style.bold, color: { argb: style.fgArgb } };
+    if (style.bgArgb) {
+      kCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: style.bgArgb } };
+    }
     kCell.alignment = { vertical: 'middle', horizontal: 'center' };
     kCell.border = thinSlateBorder;
 
@@ -573,7 +589,7 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
     { key: '有', name: '有給休暇', time: '終日（有休取得）' },
     { key: '希', name: '希望休', time: '終日（職員希望による公休）' },
     { key: '休', name: '公休', time: '終日（所定休日）' },
-    { key: '他', name: '他', time: '他事業所勤務（各事業所基準）' },
+    { key: '他', name: '他事業所勤務', time: '他事業所勤務（各事業所基準）' },
     { key: '前休', name: '午前休', time: '午前半日休暇（実働4.0h）' },
     { key: '後休', name: '午後休', time: '午後半日休暇（実働4.0h）' },
     { key: '時間', name: '時間指定勤務', time: '個別指定時間帯（例 12:30~16:00）' },
@@ -585,8 +601,10 @@ export async function exportShiftCalendarToExcel(state: AppState): Promise<void>
 
     const kCell = ws.getCell(currentRow, 1);
     kCell.value = sp.key;
-    kCell.font = { name: 'Meiryo', size: 9, bold: true, color: { argb: style.fgArgb } };
-    kCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: style.bgArgb } };
+    kCell.font = { name: 'Meiryo', size: 9, bold: style.bold, color: { argb: style.fgArgb } };
+    if (style.bgArgb) {
+      kCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: style.bgArgb } };
+    }
     kCell.alignment = { vertical: 'middle', horizontal: 'center' };
     kCell.border = thinSlateBorder;
 

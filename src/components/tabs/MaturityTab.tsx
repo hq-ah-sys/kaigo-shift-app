@@ -65,7 +65,7 @@ export const MaturityTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
+              <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
                 <th className="py-3 px-4">氏名</th>
                 <th className="py-3 px-3">職種</th>
                 <th className="py-3 px-3">形態</th>
