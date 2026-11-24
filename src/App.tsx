@@ -158,12 +158,12 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col text-gray-900 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800 font-sans selection:bg-teal-600 selection:text-white">
       {/* Header */}
-      <header className="bg-gradient-to-r from-slate-900 via-blue-950 to-blue-900 text-white shadow-md sticky top-0 z-40 border-b border-blue-800">
+      <header className="bg-gradient-to-r from-teal-50/90 via-white to-sky-50/90 text-slate-800 shadow-2xs sticky top-0 z-40 border-b border-teal-200/70 backdrop-blur-md">
         <div className="max-w-[1800px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="p-1 rounded-xl bg-white/15 border border-white/20 shadow-xs flex items-center justify-center overflow-hidden" title="葉っぱの妖精マスコット">
+            <span className="p-1 rounded-xl bg-white border border-teal-200/80 shadow-2xs flex items-center justify-center overflow-hidden" title="葉っぱの妖精マスコット">
               <img
                 src={mascotLogo}
                 alt="葉っぱの妖精マスコット"
@@ -172,14 +172,14 @@ export default function App() {
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-black tracking-tight">
+                <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
                   介護シフトAI自動作成アプリ
                 </h1>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-blue-800/80 text-[11px] font-semibold text-blue-100 border border-blue-700">
+                <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-md bg-teal-50 text-[11px] font-semibold text-teal-800 border border-teal-200">
                   {state.facility.name}
                 </span>
               </div>
-              <p className="text-[11px] text-blue-200/80 font-medium">
+              <p className="text-[11px] text-slate-500 font-medium">
                 労働基準法・36協定・介護保険人員配置基準チェック付き
               </p>
             </div>
@@ -187,15 +187,15 @@ export default function App() {
 
           {/* Header Controls */}
           <div className="flex flex-col items-end gap-1.5">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-2xs">
-              ✨ {APP_VERSION}
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+              {APP_VERSION}
             </span>
             <PWAInstallButton />
           </div>
         </div>
 
         {/* Navigation Bar */}
-        <div className="bg-slate-950/40 backdrop-blur-md border-t border-blue-900/50 px-4 overflow-x-auto scrollbar-none">
+        <div className="bg-white/90 backdrop-blur-md border-t border-slate-200/70 px-4 overflow-x-auto scrollbar-none">
           <div className="max-w-[1800px] mx-auto flex items-center gap-1 py-1.5 min-w-max">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -204,12 +204,12 @@ export default function App() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap shrink-0 ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md'
+                      ? 'bg-teal-600 text-white shadow-xs'
                       : tab.highlight
-                      ? 'bg-purple-600/40 text-purple-200 hover:bg-purple-600/60 border border-purple-400/30'
-                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      ? 'bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -264,7 +264,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-500">
+      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
         <div className="max-w-[1800px] mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
           <span>介護シフトAI自動作成アプリ {APP_VERSION} &copy; 2026 — PWA Offline Supported</span>
           <span>労働基準法（34条休憩・36条協定）/ 介護保険法人員配置基準対応</span>

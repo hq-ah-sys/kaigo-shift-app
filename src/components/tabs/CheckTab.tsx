@@ -59,19 +59,19 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
       </div>
 
       {/* Compliance Rule Explanatory Banner */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-4">
+      <div className="bg-gradient-to-r from-teal-50 to-sky-50 rounded-2xl border border-teal-200 p-4">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-blue-600 text-white shrink-0 mt-0.5">
+          <div className="p-2 rounded-xl bg-teal-600 text-white shrink-0 mt-0.5">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div className="space-y-1 text-xs">
-            <div className="font-black text-blue-950 flex items-center gap-2">
+            <div className="font-black text-teal-950 flex items-center gap-2">
               <span>⚖️ 介護職人員配置基準の法令算定ルール（管理者・計画作成担当者控除）</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                 ✓ アルゴリズム適用済
               </span>
             </div>
-            <p className="text-blue-900 leading-relaxed font-medium">
+            <p className="text-teal-900 leading-relaxed font-medium">
               厚生労働省の指定基準に基づき、<strong>管理者（管理職業務分）</strong>および<strong>計画作成担当者（ケアプラン作成業務分）</strong>は、介護職員の人員配置基準（3:1比率・日中配置人数・常勤換算FTE）から<strong>厳密に控除（除外）</strong>して計算しています。
               専従管理職・専従計画作成担当者は介護職としては0人換算、同事業所内兼務職員（例: 管理者4h / 介護職4h）は<strong>介護職として割り当てられた時間（4h＝0.5人分）のみ</strong>を算定しています。
             </p>
@@ -132,7 +132,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-indigo-600" />
+            <Bot className="w-5 h-5 text-teal-600" />
             <div>
               <h3 className="font-bold text-gray-900 text-base">🤖 AI コンプライアンス・労務監査レポート</h3>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -144,7 +144,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
           <button
             onClick={handleRunAiAudit}
             disabled={isAuditing}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs shadow-xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-700 hover:to-sky-700 text-white font-bold text-xs shadow-xs transition active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {isAuditing ? (
               <>
@@ -161,7 +161,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
         </div>
 
         {aiReport ? (
-          <div className="p-5 rounded-2xl bg-indigo-50/60 border border-indigo-200 text-gray-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
+          <div className="p-5 rounded-2xl bg-teal-50/60 border border-teal-200 text-gray-800 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
             {aiReport}
           </div>
         ) : (
@@ -202,7 +202,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
                   <td className="py-3 px-3">
                     <span
                       className={`px-2 py-0.5 rounded-full font-bold text-[11px] ${
-                        s.dedicated ? 'bg-indigo-50 text-indigo-700' : 'bg-orange-50 text-orange-700'
+                        s.dedicated ? 'bg-teal-50 text-teal-700' : 'bg-orange-50 text-orange-700'
                       }`}
                     >
                       {s.dedicated ? '専従' : '兼務'}
@@ -218,7 +218,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
                   >
                     {s.maxConsecutive}連勤
                   </td>
-                  <td className="py-3 px-3 text-center font-black text-blue-700">
+                  <td className="py-3 px-3 text-center font-black text-sky-700">
                     {s.totalNetHours.toFixed(1)}h
                   </td>
                   <td

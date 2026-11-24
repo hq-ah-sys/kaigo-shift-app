@@ -174,14 +174,14 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 opacity-10 flex items-center pr-10 pointer-events-none">
+      <div className="bg-gradient-to-r from-teal-600 via-teal-500 to-sky-500 rounded-3xl p-8 text-white shadow-md relative overflow-hidden">
+        <div className="absolute right-0 top-0 bottom-0 opacity-15 flex items-center pr-10 pointer-events-none">
           <Sparkles className="w-80 h-80" />
         </div>
 
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/30 text-blue-200 border border-blue-400/30 text-xs font-bold mb-4 backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold mb-4 backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-amber-200" />
             <span>AI Caregiving Shift Engine Pro</span>
           </div>
 
@@ -191,21 +191,21 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             AIが瞬時に最適化して自動生成
           </h2>
 
-          <p className="mt-3 text-sm text-blue-100/90 leading-relaxed font-normal">
+          <p className="mt-3 text-sm text-teal-50 leading-relaxed font-normal">
             労働基準法の休憩控除・週40時間上限、36協定残業抑制、24時間常駐基準、経験者配置、相性ペア、有給希望をすべて同時に満たす最適なシフト表を自動構築します。
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold text-blue-200">
-            <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/20">
+          <div className="mt-6 flex flex-wrap gap-2 text-xs font-semibold text-white">
+            <span className="px-3 py-1 rounded-xl bg-white/15 border border-white/25">
               ✓ 労基法休憩自動控除
             </span>
-            <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/20">
+            <span className="px-3 py-1 rounded-xl bg-white/15 border border-white/25">
               ✓ 36協定・5連勤制限
             </span>
-            <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/20">
+            <span className="px-3 py-1 rounded-xl bg-white/15 border border-white/25">
               ✓ 夜勤・明け自動ペア
             </span>
-            <span className="px-3 py-1 rounded-xl bg-white/10 border border-white/20">
+            <span className="px-3 py-1 rounded-xl bg-white/15 border border-white/25">
               ✓ 🔒特定職員の固定
             </span>
           </div>
@@ -215,7 +215,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       {/* Natural Language Custom Instructions */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6">
         <div className="flex items-center gap-2 mb-2">
-          <Bot className="w-5 h-5 text-purple-600" />
+          <Bot className="w-5 h-5 text-teal-600" />
           <h3 className="font-bold text-gray-900 text-base">自然言語で追加指示・個別事情を入力（任意）</h3>
         </div>
         <p className="text-xs text-gray-500 mb-3">
@@ -231,7 +231,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 ・${s1}　夜勤は週1回のみ
 ・${s3}　毎週木曜日出勤(日)
 ・${s2}は必ず週所定労働時間数は入れて`}
-          className="w-full px-4 py-3 rounded-xl border border-purple-200 text-sm focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-hidden font-medium leading-relaxed bg-purple-50/20"
+          className="w-full px-4 py-3 rounded-xl border border-teal-200 text-sm focus:border-teal-600 focus:ring-2 focus:ring-teal-100 outline-hidden font-medium leading-relaxed bg-teal-50/20"
         />
 
         {/* Quick Sample Instruction Chips */}
@@ -249,7 +249,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               onClick={() => {
                 setInstructionText((prev) => (prev ? `${prev}\n${sample}` : sample));
               }}
-              className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-[11px] font-medium transition cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-700 text-[11px] font-medium transition cursor-pointer"
             >
               + {sample.replace(/^・/, '')}
             </button>
@@ -261,7 +261,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <button
               onClick={handleInterpret}
               disabled={isInterpreting}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               <span>{isInterpreting ? 'AIが解釈中...' : '🤖 AIで指示を解釈・ルール登録'}</span>
@@ -277,10 +277,10 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
         {/* Parsed Rules Display */}
         {state.parsedRules.length > 0 && (
-          <div className="mt-5 p-4 rounded-xl bg-purple-50 border border-purple-200 space-y-3">
+          <div className="mt-5 p-4 rounded-xl bg-teal-50/70 border border-teal-200 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-purple-900 text-xs flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-purple-600" />
+              <span className="font-bold text-teal-900 text-xs flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-teal-600" />
                 <span>適用予定のAI個別ルール（{state.parsedRules.length}件）</span>
               </span>
               <button
@@ -297,10 +297,10 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                 return (
                   <div
                     key={rule.id}
-                    className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-purple-200 text-xs text-gray-800 font-medium"
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-teal-200 text-xs text-gray-800 font-medium"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-bold text-purple-700">
+                      <span className="font-bold text-teal-700">
                         [{rule.staffName || '全職員対象'}]
                       </span>
                       <span>{rule.text}</span>
@@ -334,7 +334,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                       )}
 
                       {rule.ruleType === 'night_limit' && (
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200 font-bold text-[10px]">
                           {rule.maxNightPerMonth === 0 || rule.maxNightPerWeek === 0
                             ? '夜勤免除 (0回)'
                             : rule.maxNightPerWeek !== undefined
@@ -362,19 +362,19 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                       )}
 
                       {rule.ruleType === 'deduct_hours' && rule.hours && (
-                        <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-800 font-bold text-[10px]">
                           実働 -{rule.hours}h
                         </span>
                       )}
 
                       {rule.ruleType === 'max_days' && rule.maxDays !== undefined && (
-                        <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-800 font-bold text-[10px]">
                           週上限 {rule.maxDays}日
                         </span>
                       )}
 
                       {rule.ruleType === 'max_consecutive' && rule.maxConsecutive !== undefined && (
-                        <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-800 font-bold text-[10px]">
                           最大 {rule.maxConsecutive}連勤まで
                         </span>
                       )}
@@ -403,7 +403,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             </div>
 
             {interpretResultText && (
-              <div className="text-[11px] text-purple-800/80 pt-1 font-mono whitespace-pre-line">
+              <div className="text-[11px] text-teal-800/80 pt-1 font-mono whitespace-pre-line">
                 {interpretResultText}
               </div>
             )}
@@ -433,11 +433,11 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
           <div className="max-w-md mx-auto space-y-2 animate-in fade-in">
             <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden p-0.5 border border-gray-200">
               <div
-                className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <div className="text-xs font-bold text-blue-700 flex items-center justify-center gap-2">
+            <div className="text-xs font-bold text-teal-700 flex items-center justify-center gap-2">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               <span>{progressStepMsg}</span>
             </div>
@@ -447,7 +447,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
         <button
           onClick={handleRunGenerate}
           disabled={isGenerating}
-          className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-black text-base shadow-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50 cursor-pointer tracking-wider"
+          className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-teal-600 via-teal-500 to-sky-500 hover:from-teal-700 hover:via-teal-600 hover:to-sky-600 text-white font-black text-base shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer tracking-wider"
         >
           <Play className="w-5 h-5 fill-current" />
           <span>{isGenerating ? 'AIが生成中...' : '🚀 AIシフトを自動生成する'}</span>

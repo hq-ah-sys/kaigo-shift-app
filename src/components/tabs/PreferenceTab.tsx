@@ -143,7 +143,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
+              <Calendar className="w-5 h-5 text-teal-600" />
               <span>希望休・有休・個別勤務時間 入力</span>
             </h2>
             <p className="text-xs text-gray-500 mt-1">
@@ -188,7 +188,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                 onClick={() => setSelectedStaffId(s.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                   selectedStaffId === s.id
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-teal-600 text-white shadow-xs'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -345,7 +345,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <span>後休(4h)</span>
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="w-4 h-4 rounded bg-purple-600 text-white text-[10px] font-black flex items-center justify-center">
+              <span className="w-4 h-4 rounded bg-cyan-600 text-white text-[10px] font-black flex items-center justify-center">
                 ⏰
               </span>
               <span>時間指定</span>
@@ -384,7 +384,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
             else if (val === '希望休') bgClass = 'bg-amber-50 border-amber-300';
             else if (isMae) bgClass = 'bg-teal-50 border-teal-300';
             else if (isAto) bgClass = 'bg-sky-50 border-sky-300';
-            else if (timeVal) bgClass = 'bg-purple-50 border-purple-300';
+            else if (timeVal) bgClass = 'bg-cyan-50 border-cyan-300';
 
             return (
               <div
@@ -431,7 +431,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     </div>
                   )}
                   {timeVal && (
-                    <div className="px-1.5 py-0.5 rounded-md bg-purple-600 text-white font-bold text-center text-[10px]">
+                    <div className="px-1.5 py-0.5 rounded-md bg-cyan-600 text-white font-bold text-center text-[10px]">
                       {timeVal.start}〜{timeVal.end}
                     </div>
                   )}
@@ -455,7 +455,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               const isMae = p.type === '前休' || p.type === '午前休';
               const isAto = p.type === '後休' || p.type === '午後休';
 
-              let badgeClass = 'bg-purple-100 text-purple-800';
+              let badgeClass = 'bg-cyan-100 text-cyan-800';
               if (p.type === '有休') badgeClass = 'bg-emerald-100 text-emerald-800';
               else if (p.type === '希望休') badgeClass = 'bg-amber-100 text-amber-900';
               else if (isMae) badgeClass = 'bg-teal-100 text-teal-800';

@@ -183,7 +183,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
       {/* Top Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-600">
+          <div className="p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-600">
             <Settings className="w-5 h-5" />
           </div>
           <div>
@@ -217,7 +217,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <button
             onClick={handleBackupClick}
             disabled={isProcessing}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
             title="バックアップファイルを保存します"
           >
             <Save className="w-4 h-4" />
@@ -228,7 +228,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <button
             onClick={handleRestore}
             disabled={isProcessing}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm shadow-xs transition cursor-pointer disabled:opacity-50"
             title="バックアップファイルを選択して現在のデータを復元します"
           >
             <FolderOpen className="w-4 h-4" />
@@ -285,7 +285,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <select
             value={selectedSlot}
             onChange={(e) => handleSlotChange(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-800 focus:border-purple-600 outline-hidden"
+            className="px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-800 focus:border-teal-600 outline-hidden"
           >
             <option value="kaigo_shift_pro_state_v1">スロット 1 (標準: kaigo_shift_pro_state_v1)</option>
             <option value="kaigo_shift_pro_slot_2">スロット 2 (バックアップ・別事業所用)</option>
@@ -300,14 +300,14 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
       {/* AI Provider & API Key Settings */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-5">
         <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-          <Key className="w-5 h-5 text-blue-600" />
+          <Key className="w-5 h-5 text-teal-600" />
           <h3 className="font-bold text-gray-900 text-base">Gemini AI API 設定</h3>
         </div>
 
         <div className="space-y-4 text-xs sm:text-sm">
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl space-y-2 text-xs text-blue-900">
-            <div className="flex items-center gap-2 font-bold text-blue-900">
-              <Server className="w-4.5 h-4.5 text-blue-600 shrink-0" />
+          <div className="p-4 bg-gradient-to-r from-teal-50 to-sky-50 border border-teal-200 rounded-xl space-y-2 text-xs text-teal-900">
+            <div className="flex items-center gap-2 font-bold text-teal-900">
+              <Server className="w-4.5 h-4.5 text-teal-600 shrink-0" />
               <span>クライアントサイド・AIエンジン統合稼働中（完全無料・サーバーレス対応）</span>
             </div>
             <p className="text-gray-600 leading-relaxed">
@@ -322,7 +322,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
             <select
               value={geminiModel}
               onChange={(e) => setGeminiModel(e.target.value)}
-              className="w-full max-w-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-700 focus:border-blue-600 outline-hidden"
+              className="w-full max-w-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-700 focus:border-teal-600 outline-hidden"
             >
               <option value="gemini-3.8-flash">gemini-3.8-flash (推奨・高速高精度)</option>
               <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (軽量)</option>
@@ -332,7 +332,7 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               onClick={handleSaveAIConfig}
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
             >
               設定を保存する
             </button>
@@ -340,9 +340,9 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
             <button
               onClick={handleTestConnection}
               disabled={testing}
-              className="px-4 py-2.5 rounded-xl border border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2.5 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
             >
-              <Sparkles className="w-4 h-4 text-purple-600" />
+              <Sparkles className="w-4 h-4 text-sky-600" />
               <span>{testing ? '接続テスト中...' : '🔌 API接続テスト'}</span>
             </button>
 

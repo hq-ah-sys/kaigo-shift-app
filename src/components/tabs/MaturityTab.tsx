@@ -131,7 +131,7 @@ export const MaturityTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex flex-wrap gap-1">
                         {s.night && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900 text-blue-200 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-900 border border-sky-200 text-[10px] font-bold">
                             <Moon className="w-2.5 h-2.5" /> 夜勤可
                           </span>
                         )}
@@ -141,7 +141,7 @@ export const MaturityTab: React.FC<Props> = ({ state, onUpdateState }) => {
                           </span>
                         )}
                         {roles.some((r) => r.includes('計画作成') || r.includes('責任者') || r.includes('管理')) && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200 text-[10px] font-bold">
                             責任者職
                           </span>
                         )}

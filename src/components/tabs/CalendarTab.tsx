@@ -89,7 +89,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       key: '管理者',
       label: '👑 1行目：管理者',
       badgeText: '管理者',
-      badgeBg: 'bg-purple-100 text-purple-900 border-purple-300',
+      badgeBg: 'bg-cyan-100 text-cyan-900 border-cyan-300',
       matchFn: (s: any) => (Array.isArray(s.roles) ? s.roles : [s.role]).includes('管理者'),
     },
     {
@@ -398,7 +398,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <button
               onClick={() => setDispMode('key')}
               className={`px-3 py-1.5 transition cursor-pointer ${
-                dispMode === 'key' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+                dispMode === 'key' ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               記号表示
@@ -406,7 +406,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <button
               onClick={() => setDispMode('time')}
               className={`px-3 py-1.5 transition cursor-pointer ${
-                dispMode === 'time' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+                dispMode === 'time' ? 'bg-teal-600 text-white' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               時間表示
@@ -447,8 +447,8 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             onClick={() => setIsStampEditMode(!isStampEditMode)}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs shadow-xs transition cursor-pointer ${
               isStampEditMode
-                ? 'bg-purple-600 text-white ring-2 ring-purple-300 shadow-md'
-                : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
+                ? 'bg-sky-600 text-white ring-2 ring-sky-300 shadow-md'
+                : 'bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200'
             }`}
             title="クリックで即座に入力できるスタンプ編集画面を開く"
           >
@@ -459,7 +459,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
           <button
             onClick={handleQuickReGenerate}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
             title="固定されていない職員のシフトを再生成"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -479,17 +479,17 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
       {/* Quick Stamp Edit Palette Toolbar (when isStampEditMode is active) */}
       {isStampEditMode && (
-        <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 rounded-2xl border-2 border-purple-300 p-4 shadow-sm animate-in fade-in space-y-3">
+        <div className="bg-gradient-to-r from-teal-50 via-sky-50 to-cyan-50 rounded-2xl border-2 border-sky-300 p-4 shadow-sm animate-in fade-in space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-purple-600 text-white rounded-lg">
+              <span className="p-1.5 bg-sky-600 text-white rounded-lg">
                 <Pencil className="w-4 h-4" />
               </span>
               <div>
-                <span className="font-bold text-purple-950 text-xs">
+                <span className="font-bold text-sky-950 text-xs">
                   シフト直接スタンプ編集画面
                 </span>
-                <span className="text-[11px] text-purple-700 block">
+                <span className="text-[11px] text-sky-700 block">
                   下の記号を選択した状態でシフト表のセルをクリックすると、そのシフトが即座に入力されます。
                 </span>
               </div>
@@ -499,7 +499,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               <button
                 type="button"
                 onClick={() => onNavigateTab('fileEdit')}
-                className="px-3 py-1 rounded-lg bg-white border border-purple-300 text-purple-700 hover:bg-purple-100 font-bold text-xs shadow-2xs transition cursor-pointer"
+                className="px-3 py-1 rounded-lg bg-white border border-sky-300 text-sky-700 hover:bg-sky-100 font-bold text-xs shadow-2xs transition cursor-pointer"
               >
                 全データJSON編集へ →
               </button>
@@ -525,7 +525,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                   onClick={() => setActiveStampKey(p.key)}
                   className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs ${
                     isSelected
-                      ? 'ring-2 ring-purple-600 ring-offset-2 scale-105'
+                      ? 'ring-2 ring-teal-600 ring-offset-2 scale-105'
                       : 'hover:opacity-90'
                   }`}
                   style={{ backgroundColor: p.color, color: '#ffffff' }}
@@ -544,7 +544,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                   key={sp}
                   onClick={() => setActiveStampKey(sp)}
                   className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-1 border shadow-2xs ${
-                    isSelected ? 'ring-2 ring-purple-600 ring-offset-2 scale-105' : ''
+                    isSelected ? 'ring-2 ring-teal-600 ring-offset-2 scale-105' : ''
                   }`}
                   style={{
                     backgroundColor: `${SP_COLOR[sp]}25`,
@@ -561,7 +561,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               type="button"
               onClick={() => setActiveStampKey('CLEAR')}
               className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-1 border border-gray-300 bg-white text-gray-600 shadow-2xs ${
-                activeStampKey === 'CLEAR' ? 'ring-2 ring-purple-600 ring-offset-2 scale-105' : ''
+                activeStampKey === 'CLEAR' ? 'ring-2 ring-teal-600 ring-offset-2 scale-105' : ''
               }`}
             >
               <Eraser className="w-3.5 h-3.5 text-gray-400" />
@@ -610,7 +610,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <span>公休 (0h)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-5 h-5 rounded bg-blue-300 text-blue-900 font-bold text-[11px] flex items-center justify-center">
+            <span className="w-5 h-5 rounded bg-sky-200 text-sky-900 font-bold text-[11px] flex items-center justify-center border border-sky-300">
               明
             </span>
             <span>明け (0h)</span>
@@ -678,7 +678,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                         <button
                           type="button"
                           onClick={() => setDayBatchModal(d)}
-                          className="hover:underline hover:text-purple-700 font-bold cursor-pointer text-xs"
+                          className="hover:underline hover:text-teal-700 font-bold cursor-pointer text-xs"
                           title={`${month}月${d}日の全職員シフト一括編集画面を開く`}
                         >
                           {d}
@@ -703,13 +703,13 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                     </th>
                   );
                 })}
-                <th className="py-2.5 px-2 min-w-[55px] font-black text-blue-700 bg-blue-50/60 border-r border-gray-200">
+                <th className="py-2.5 px-2 min-w-[55px] font-black text-sky-700 bg-sky-50/60 border-r border-gray-200">
                   総実労働h
                 </th>
                 <th className="py-2.5 px-2 min-w-[50px] font-bold text-gray-700 bg-gray-50 border-r border-gray-200">
                   週平均
                 </th>
-                <th className="py-2.5 px-2 min-w-[55px] font-bold text-purple-700 bg-purple-50/50">
+                <th className="py-2.5 px-2 min-w-[55px] font-bold text-teal-700 bg-teal-50/50">
                   常勤換算
                 </th>
               </tr>
@@ -787,19 +787,19 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                                 e.stopPropagation();
                                 setStaffBatchModal(s);
                               }}
-                              className="p-0.5 text-gray-400 hover:text-purple-600 rounded transition cursor-pointer"
+                              className="p-0.5 text-gray-400 hover:text-teal-600 rounded transition cursor-pointer"
                               title={`${s.name} の月間シフト編集画面を開く`}
                             >
                               <Pencil className="w-2.5 h-2.5" />
                             </button>
                             {isMultiRole && (
-                              <span className="px-1 py-0.2 rounded text-[9px] font-black bg-blue-100 text-blue-800 border border-blue-200 shrink-0">
+                              <span className="px-1 py-0.2 rounded text-[9px] font-black bg-teal-100 text-teal-800 border border-teal-200 shrink-0">
                                 兼務
                               </span>
                             )}
                             {s.otherFacilityConcurrent && (
                               <span
-                                className="px-1 py-0.2 rounded text-[9px] font-black bg-purple-100 text-purple-800 border border-purple-200 shrink-0"
+                                className="px-1 py-0.2 rounded text-[9px] font-black bg-sky-100 text-sky-800 border border-sky-200 shrink-0"
                                 title={`他事業所兼務 (${s.otherFacilityName || '他'})`}
                               >
                                 他
@@ -827,10 +827,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                       {/* Role column */}
                       <td className="py-2 px-2.5 text-left border-r-2 border-gray-200 sticky left-[142px] z-10 bg-white whitespace-nowrap font-medium">
                         {currentRole === '管理者' ? (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md font-bold text-[10px] bg-purple-100 text-purple-900 border border-purple-300">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md font-bold text-[10px] bg-cyan-100 text-cyan-900 border border-cyan-300">
                             <span>管理者</span>
                             {isMultiRole && allocHDisplay > 0 && (
-                              <span className="text-purple-700 font-extrabold text-[9px]">({allocHDisplay}h/日)</span>
+                              <span className="text-cyan-700 font-extrabold text-[9px]">({allocHDisplay}h/日)</span>
                             )}
                           </span>
                         ) : currentRole === '計画作成担当者' || currentRole === '介護支援専門員' ? (
@@ -876,8 +876,8 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                         } else if (key === '希望休') {
                           tc = '#78350f';
                         } else if (isNightOff) {
-                          bg = '#93c5fd';
-                          tc = '#1e3a8a';
+                          bg = '#bae6fd';
+                          tc = '#0c4a6e';
                         } else if (isOtherFacShift) {
                           bg = SP_COLOR['他事業所'] || '#e2e8f0';
                           tc = SP_TEXT_COLOR['他事業所'] || '#475569';
@@ -888,7 +888,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           bg = SP_COLOR['午後休'] || '#0284c7';
                           tc = SP_TEXT_COLOR['午後休'] || '#ffffff';
                         } else if (timeVal) {
-                          bg = '#7c3aed';
+                          bg = '#0891b2';
                           tc = '#ffffff';
                         }
 
@@ -909,8 +909,8 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                             }`}
                           >
                             {isNightOff ? (
-                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-blue-500 to-blue-200 text-white font-black text-xs shadow-inner">
-                                <span className="drop-shadow-sm">明</span>
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-sky-200 via-sky-100 to-teal-50 text-sky-900 font-black text-xs shadow-inner">
+                                <span>明</span>
                               </div>
                             ) : isOtherFacShift ? (
                               <div
@@ -1008,7 +1008,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                   <td colSpan={2} className="py-1 px-3 text-left sticky left-8 bg-gray-100 border-r-2 border-gray-200 whitespace-nowrap">
                     <div className="flex flex-col">
                       <span className="font-bold text-gray-900">📊 介護職比率 ({fcType.ratio}:1 要{ratioNeeded}名)</span>
-                      <span className="text-[9px] text-indigo-700 font-semibold">※管理者・計画作成分は控除済</span>
+                      <span className="text-[9px] text-teal-700 font-semibold">※管理者・計画作成分は控除済</span>
                     </div>
                   </td>
                   {Array.from({ length: days }, (_, i) => i + 1).map((d) => {
@@ -1124,15 +1124,15 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               )}
 
               {/* FTE Total Row */}
-              <tr className="bg-purple-50/90 font-black text-xs text-purple-950 border-t-2 border-purple-200">
-                <td className="sticky left-0 bg-purple-50 border-r border-gray-200"></td>
-                <td colSpan={2} className="py-2 px-3 text-left sticky left-8 bg-purple-50 border-r-2 border-purple-200 whitespace-nowrap">
+              <tr className="bg-teal-50/90 font-black text-xs text-teal-950 border-t-2 border-teal-200">
+                <td className="sticky left-0 bg-teal-50 border-r border-gray-200"></td>
+                <td colSpan={2} className="py-2 px-3 text-left sticky left-8 bg-teal-50 border-r-2 border-teal-200 whitespace-nowrap">
                   📊 常勤換算（FTE）合計
                 </td>
                 <td colSpan={days} className="border-r border-gray-200 text-center font-bold text-gray-500 text-[11px] bg-white">
                   （全職員合計）
                 </td>
-                <td className="py-2 px-1 text-right font-black text-blue-700 bg-blue-50/60 border-r border-gray-200 whitespace-nowrap">
+                <td className="py-2 px-1 text-right font-black text-sky-700 bg-sky-50/60 border-r border-gray-200 whitespace-nowrap">
                   {staff.reduce((sum, s) => {
                     const sTotalH = Object.entries(shifts[s.id] || {}).reduce((hSum, [dStr, k]) => {
                       const d = parseInt(dStr, 10);
@@ -1144,7 +1144,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                 <td className="py-2 px-1 text-right font-bold text-gray-700 bg-gray-50/60 border-r border-gray-200 whitespace-nowrap">
                   -
                 </td>
-                <td className="py-2 px-2 text-right font-black text-purple-700 bg-purple-100 whitespace-nowrap text-sm">
+                <td className="py-2 px-2 text-right font-black text-teal-700 bg-teal-100 whitespace-nowrap text-sm">
                   {staff.reduce((sum, s) => {
                     const sTotalH = Object.entries(shifts[s.id] || {}).reduce((hSum, [dStr, k]) => {
                       const d = parseInt(dStr, 10);
@@ -1209,7 +1209,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                 <span className="text-gray-500 font-medium">現在の設定:</span>
                 <div className="font-bold">
                   {curTv ? (
-                    <span className="text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                    <span className="text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">
                       ⏰ 時間指定 {curTv.start}〜{curTv.end} ({getTimeKeyHours(curKey).toFixed(1)}h)
                     </span>
                   ) : curPat ? (
@@ -1245,7 +1245,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                   onClick={() => setModalMode('pattern')}
                   className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                     modalMode === 'pattern'
-                      ? 'bg-white text-blue-700 shadow-xs'
+                      ? 'bg-white text-teal-700 shadow-xs'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -1256,7 +1256,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                   onClick={() => setModalMode('time')}
                   className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                     modalMode === 'time'
-                      ? 'bg-white text-purple-700 shadow-xs'
+                      ? 'bg-white text-cyan-700 shadow-xs'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -1280,7 +1280,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           key={p.id}
                           onClick={() => handleSelectShift(p.key)}
                           className={`p-2.5 rounded-xl border text-left font-bold text-xs flex items-center justify-between transition cursor-pointer hover:scale-[1.02] ${
-                            isCur ? 'ring-2 ring-blue-500 ring-offset-1' : ''
+                            isCur ? 'ring-2 ring-teal-500 ring-offset-1' : ''
                           }`}
                           style={{
                             backgroundColor: `${p.color}15`,
@@ -1302,9 +1302,9 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                   <button
                     type="button"
                     onClick={() => setModalMode('time')}
-                    className="w-full p-2.5 rounded-xl border border-dashed border-purple-300 bg-purple-50/60 hover:bg-purple-100 text-purple-700 text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full p-2.5 rounded-xl border border-dashed border-cyan-300 bg-cyan-50/60 hover:bg-cyan-100 text-cyan-700 text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <Clock className="w-4 h-4 text-purple-600" />
+                    <Clock className="w-4 h-4 text-cyan-600" />
                     <span>時短・変則時間（個別開始/終了時間）を指定する →</span>
                   </button>
                 </div>
@@ -1313,9 +1313,9 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               {/* Tab 2: Custom Time Selector */}
               {modalMode === 'time' && (
                 <div className="mt-3.5 space-y-3.5">
-                  <div className="p-3.5 bg-gradient-to-br from-purple-50/70 to-indigo-50/70 border border-purple-200 rounded-xl space-y-3">
-                    <div className="text-xs font-bold text-purple-900 flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-purple-600" />
+                  <div className="p-3.5 bg-gradient-to-br from-teal-50/70 to-sky-50/70 border border-teal-200 rounded-xl space-y-3">
+                    <div className="text-xs font-bold text-teal-900 flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-teal-600" />
                       <span>勤務開始・終了時間の指定</span>
                     </div>
 
@@ -1328,7 +1328,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           type="time"
                           value={customStart}
                           onChange={(e) => setCustomStart(e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-purple-200 bg-white font-bold text-sm text-gray-900 focus:outline-hidden focus:border-purple-600 shadow-2xs"
+                          className="w-full px-3 py-2 rounded-lg border border-teal-200 bg-white font-bold text-sm text-gray-900 focus:outline-hidden focus:border-teal-600 shadow-2xs"
                         />
                       </div>
                       <div>
@@ -1339,13 +1339,13 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           type="time"
                           value={customEnd}
                           onChange={(e) => setCustomEnd(e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-purple-200 bg-white font-bold text-sm text-gray-900 focus:outline-hidden focus:border-purple-600 shadow-2xs"
+                          className="w-full px-3 py-2 rounded-lg border border-teal-200 bg-white font-bold text-sm text-gray-900 focus:outline-hidden focus:border-teal-600 shadow-2xs"
                         />
                       </div>
                     </div>
 
                     {/* Live Calculation Preview */}
-                    <div className="bg-white rounded-lg p-2.5 border border-purple-100 flex items-center justify-between text-xs">
+                    <div className="bg-white rounded-lg p-2.5 border border-teal-100 flex items-center justify-between text-xs">
                       <div>
                         <span className="text-gray-500 text-[10px]">総拘束: </span>
                         <span className="font-bold text-gray-800">{customGross.toFixed(1)}h</span>
@@ -1356,13 +1356,13 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           {customBreak > 0 ? `${customBreak * 60}分 (${customBreak}h)` : 'なし (0h)'}
                         </span>
                       </div>
-                      <div className="bg-purple-100 px-2 py-1 rounded text-purple-900 font-black">
+                      <div className="bg-cyan-100 px-2 py-1 rounded text-cyan-900 font-black">
                         実働 {customNet.toFixed(2)}h
                       </div>
                     </div>
 
                     {isOvernight && (
-                      <div className="text-[11px] text-indigo-700 font-bold bg-indigo-50 p-2 rounded-lg border border-indigo-100 flex items-center gap-1.5">
+                      <div className="text-[11px] text-sky-700 font-bold bg-sky-50 p-2 rounded-lg border border-sky-200 flex items-center gap-1.5">
                         <span>🌙 翌日をまたぐ夜勤シフトとして24h稼働・実労働時間を計算します</span>
                       </div>
                     )}
@@ -1371,7 +1371,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                     <button
                       type="button"
                       onClick={() => handleSelectShift(`time:${customStart}-${customEnd}`)}
-                      className="w-full py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Clock className="w-4 h-4" />
                       <span>この時間（{customStart}〜{customEnd}：実働{customNet.toFixed(2)}h）で確定</span>
@@ -1392,11 +1392,11 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                             setCustomStart(qp.start);
                             setCustomEnd(qp.end);
                           }}
-                          className="p-1.5 rounded-lg border border-gray-200 bg-gray-50 hover:bg-purple-50 hover:border-purple-300 text-left transition cursor-pointer"
+                          className="p-1.5 rounded-lg border border-gray-200 bg-gray-50 hover:bg-cyan-50 hover:border-cyan-300 text-left transition cursor-pointer"
                         >
                           <div className="flex items-center justify-between font-bold text-[11px] text-gray-800">
                             <span>{qp.label}</span>
-                            <span className="text-[10px] text-purple-700 font-extrabold">{qp.hours}</span>
+                            <span className="text-[10px] text-cyan-700 font-extrabold">{qp.hours}</span>
                           </div>
                           <div className="text-[10px] text-gray-400">
                             {qp.start}〜{qp.end} ({qp.tag})
@@ -1493,7 +1493,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                     </span>
                   )}
                   {selectedStaffFilter !== null && (
-                    <span className="px-2 py-0.5 rounded bg-indigo-600 text-white font-black">
+                    <span className="px-2 py-0.5 rounded bg-teal-600 text-white font-black">
                       {staff.find((s) => s.id === selectedStaffFilter)?.name} さんのエラー
                     </span>
                   )}
@@ -1577,12 +1577,12 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             </div>
 
             {/* Resolution Suggestions */}
-            <div className="mt-5 p-4 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-2">
-              <div className="font-extrabold flex items-center gap-1.5 text-purple-950">
-                <Sparkles className="w-4 h-4 text-purple-600" />
+            <div className="mt-5 p-4 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 space-y-2">
+              <div className="font-extrabold flex items-center gap-1.5 text-sky-950">
+                <Sparkles className="w-4 h-4 text-sky-600" />
                 <span>💡 エラー解消・修正のためのワンポイントガイド</span>
               </div>
-              <ul className="list-disc list-inside space-y-1 text-purple-800 font-medium">
+              <ul className="list-disc list-inside space-y-1 text-sky-800 font-medium">
                 <li>
                   <strong>「シフト再生成」を実行</strong>: 固定ロック（🔒）以外のシフトをAIアルゴリズムで再計算し、衝突や不足を自動回避します。
                 </li>
@@ -1605,7 +1605,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                 }}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs transition cursor-pointer"
               >
-                <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                <ShieldCheck className="w-4 h-4 text-teal-600" />
                 <span>コンプライアンス詳細タブへ</span>
               </button>
 
@@ -1616,7 +1616,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                     handleQuickReGenerate();
                     setShowAlertModal(false);
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>シフト再生成で自動解消</span>
@@ -1643,7 +1643,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
           <div className="w-full max-w-4xl rounded-2xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-purple-50 text-purple-700">
+                <div className="p-2 rounded-xl bg-teal-50 text-teal-700">
                   <Users className="w-5 h-5" />
                 </div>
                 <div>
@@ -1665,8 +1665,8 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             </div>
 
             {/* Quick Batch Fill Actions */}
-            <div className="p-3 bg-purple-50/70 rounded-xl border border-purple-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="font-bold text-purple-900">一括パターン適用:</span>
+            <div className="p-3 bg-teal-50/70 rounded-xl border border-teal-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-bold text-teal-900">一括パターン適用:</span>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
@@ -1681,7 +1681,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                       return { ...prev, shifts: { ...prev.shifts, [staffBatchModal.id]: cur } };
                     });
                   }}
-                  className="px-2.5 py-1 rounded-lg bg-white border border-purple-300 text-purple-800 font-bold hover:bg-purple-100 transition cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-white border border-teal-300 text-teal-800 font-bold hover:bg-teal-100 transition cursor-pointer"
                 >
                   平日をすべて「{shiftPatterns[0]?.key || '日勤'}」にする
                 </button>
@@ -1697,7 +1697,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                       return { ...prev, shifts: { ...prev.shifts, [staffBatchModal.id]: cur } };
                     });
                   }}
-                  className="px-2.5 py-1 rounded-lg bg-white border border-purple-300 text-purple-800 font-bold hover:bg-purple-100 transition cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-white border border-teal-300 text-teal-800 font-bold hover:bg-teal-100 transition cursor-pointer"
                 >
                   土日をすべて「公休」にする
                 </button>
@@ -1758,7 +1758,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           };
                         });
                       }}
-                      className="w-full px-2 py-1 rounded-lg border border-gray-300 text-xs font-bold bg-white focus:border-purple-600 outline-hidden"
+                      className="w-full px-2 py-1 rounded-lg border border-gray-300 text-xs font-bold bg-white focus:border-teal-600 outline-hidden"
                     >
                       {shiftPatterns.map((p) => (
                         <option key={p.id} value={p.key}>
@@ -1780,7 +1780,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               <button
                 type="button"
                 onClick={() => setStaffBatchModal(null)}
-                className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                className="px-6 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
                 編集を完了して閉じる
               </button>
@@ -1848,7 +1848,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                             };
                           });
                         }}
-                        className="px-3 py-1.5 rounded-xl border border-gray-300 font-bold text-xs bg-white focus:border-purple-600 outline-hidden"
+                        className="px-3 py-1.5 rounded-xl border border-gray-300 font-bold text-xs bg-white focus:border-teal-600 outline-hidden"
                       >
                         {shiftPatterns.map((p) => (
                           <option key={p.id} value={p.key}>
@@ -1871,7 +1871,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               <button
                 type="button"
                 onClick={() => setDayBatchModal(null)}
-                className="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                className="px-6 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
                 編集を完了して閉じる
               </button>

@@ -297,7 +297,7 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     <td className="py-3 px-3 font-black text-blue-700">{nH.toFixed(1)}h</td>
                     <td className="py-3 px-3 whitespace-nowrap">
                       {night ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900 text-blue-200 text-[11px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 text-sky-900 border border-sky-200 text-[11px] font-bold">
                           <Moon className="w-3 h-3" /> 夜勤
                         </span>
                       ) : (
@@ -491,8 +491,8 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
               </div>
 
               {currentNight && (
-                <div className="p-3 rounded-xl bg-slate-900 text-blue-200 text-xs flex items-center gap-2">
-                  <Moon className="w-4 h-4 text-blue-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-sky-50 border border-sky-200 text-sky-900 text-xs flex items-center gap-2">
+                  <Moon className="w-4 h-4 text-sky-600 shrink-0" />
                   <span>このパターンは22:00〜翌05:00を跨ぐため、<strong>夜勤扱い</strong>になります。</span>
                 </div>
               )}

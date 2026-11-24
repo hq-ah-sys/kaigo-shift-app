@@ -293,9 +293,9 @@ export function downloadPatternTemplate(): void {
   const rows: (string | number)[][] = [
     PATTERN_CSV_HEADERS,
     ['早', '早番', '07:00', '16:00', '#f59e0b', 'default'],
-    ['日', '日勤', '09:00', '18:00', '#2563eb', 'default'],
-    ['遅', '遅番', '13:00', '22:00', '#7c3aed', 'default'],
-    ['夜', '夜勤', '17:00', '09:00', '#0f172a', 'default'],
+    ['日', '日勤', '09:00', '18:00', '#0284c7', 'default'],
+    ['遅', '遅番', '13:00', '22:00', '#0d9488', 'default'],
+    ['夜', '夜勤', '17:00', '09:00', '#475569', 'default'],
   ];
   downloadCSV(rows, 'シフトパターン_テンプレート.csv');
 }

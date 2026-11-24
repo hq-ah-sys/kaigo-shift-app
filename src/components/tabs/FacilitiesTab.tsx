@@ -68,13 +68,13 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-3xl p-3 rounded-2xl bg-blue-50 border border-blue-100 shrink-0">
+            <span className="text-3xl p-3 rounded-2xl bg-teal-50 border border-teal-100 shrink-0">
               {ft?.icon || '🏢'}
             </span>
             <div>
               <h2 className="text-xl font-bold text-gray-900">{currentFacility.name}</h2>
               <div className="flex items-center gap-2 mt-1">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
                   {ft?.name || 'その他'}
                 </span>
                 <span className="text-xs text-gray-500">
@@ -86,7 +86,7 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
           <button
             onClick={openEditModal}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-xs transition cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xs transition cursor-pointer"
           >
             <Edit2 className="w-4 h-4" />
             <span>事業所情報を編集</span>
@@ -98,7 +98,7 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
           <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase mb-2">
-            <Users className="w-4 h-4 text-blue-600" />
+            <Users className="w-4 h-4 text-sky-600" />
             <span>登録職員数</span>
           </div>
           <div className="text-3xl font-black text-gray-900">{staffCount}名</div>
@@ -107,10 +107,10 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
           <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase mb-2">
-            <Clock className="w-4 h-4 text-purple-600" />
+            <Clock className="w-4 h-4 text-teal-600" />
             <span>勤務パターン</span>
           </div>
-          <div className="text-3xl font-black text-purple-700">
+          <div className="text-3xl font-black text-teal-700">
             {state.shiftPatterns.length}種類
           </div>
           <div className="text-xs text-gray-400 mt-1">「シフト設定」タブで管理</div>
@@ -170,7 +170,7 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="例：グループホーム さくら"
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-hidden font-medium"
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-100 outline-hidden font-medium"
                 />
               </div>
 
@@ -186,7 +186,7 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
                       onClick={() => setTypeId(fType.id)}
                       className={`p-2.5 rounded-xl border text-left flex items-center gap-2 transition cursor-pointer ${
                         typeId === fType.id
-                          ? 'border-blue-600 bg-blue-50 text-blue-900 font-bold'
+                          ? 'border-teal-600 bg-teal-50 text-teal-900 font-bold'
                           : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                       }`}
                     >
@@ -207,19 +207,19 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
                   max="300"
                   value={users}
                   onChange={(e) => setUsers(parseInt(e.target.value, 10) || 1)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-hidden font-medium"
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-100 outline-hidden font-medium"
                 />
               </div>
 
               {typeId === 'dayservice' && (
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 space-y-3">
-                  <div className="font-bold text-blue-900 text-xs flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-blue-600" />
+                <div className="bg-sky-50 rounded-xl p-4 border border-sky-200 space-y-3">
+                  <div className="font-bold text-sky-900 text-xs flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-sky-600" />
                     <span>☀️ 通所介護（デイサービス）営業日・営業時間</span>
                   </div>
 
                   <div>
-                    <span className="block text-xs text-blue-800 font-semibold mb-1">営業曜日</span>
+                    <span className="block text-xs text-sky-800 font-semibold mb-1">営業曜日</span>
                     <div className="flex gap-2">
                       {['日', '月', '火', '水', '木', '金', '土'].map((dName, idx) => {
                         const checked = bizDays.includes(idx);
@@ -236,8 +236,8 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
                             }}
                             className={`w-8 h-8 rounded-lg text-xs font-bold transition cursor-pointer ${
                               checked
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-white border border-blue-200 text-gray-500'
+                                ? 'bg-teal-600 text-white'
+                                : 'bg-white border border-sky-200 text-gray-500'
                             }`}
                           >
                             {dName}
@@ -249,21 +249,21 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <span className="block text-xs text-blue-800 font-semibold mb-1">始業時刻</span>
+                      <span className="block text-xs text-sky-800 font-semibold mb-1">始業時刻</span>
                       <input
                         type="time"
                         value={openTime}
                         onChange={(e) => setOpenTime(e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-blue-200 bg-white font-medium text-xs"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-sky-200 bg-white font-medium text-xs"
                       />
                     </div>
                     <div>
-                      <span className="block text-xs text-blue-800 font-semibold mb-1">終業時刻</span>
+                      <span className="block text-xs text-sky-800 font-semibold mb-1">終業時刻</span>
                       <input
                         type="time"
                         value={closeTime}
                         onChange={(e) => setCloseTime(e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-blue-200 bg-white font-medium text-xs"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-sky-200 bg-white font-medium text-xs"
                       />
                     </div>
                   </div>
@@ -282,7 +282,7 @@ export const FacilitiesTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
                 保存する
               </button>

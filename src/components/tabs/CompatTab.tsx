@@ -64,7 +64,7 @@ export const CompatTab: React.FC<Props> = ({ state, onUpdateState }) => {
       {/* Top Description */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-600">
+          <div className="p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-600">
             <HeartHandshake className="w-5 h-5" />
           </div>
           <div>

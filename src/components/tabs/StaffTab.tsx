@@ -321,7 +321,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-indigo-600" />
+              <Users className="w-5 h-5 text-teal-600" />
               <span>職員マスタ一覧</span>
               <span className="text-xs font-semibold text-gray-500">
                 ({state.facility.name}・全{state.staff.length}名)
@@ -335,7 +335,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-xs transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xs transition cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>職員を追加</span>
@@ -433,11 +433,11 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap">
                       {s.roles && s.roles.length > 1 && s.otherFacilityConcurrent ? (
-                        <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-purple-100 text-purple-800 border border-purple-300">
+                        <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-cyan-100 text-cyan-800 border border-cyan-300">
                           両方兼務 (同+他)
                         </span>
                       ) : s.otherFacilityConcurrent ? (
-                        <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-indigo-100 text-indigo-800 border border-indigo-200">
+                        <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-sky-100 text-sky-800 border border-sky-200">
                           他事業所兼務
                         </span>
                       ) : (s.roles && s.roles.length > 1) || !s.dedicated ? (
@@ -473,7 +473,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     </td>
                     <td className="py-3 px-3 whitespace-nowrap">
                       {s.nightOnly ? (
-                        <span className="px-2 py-0.5 rounded-full bg-slate-900 text-blue-200 font-bold">
+                        <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-900 border border-sky-200 font-bold">
                           🌙 夜専
                         </span>
                       ) : s.night ? (
@@ -598,7 +598,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                         }}
                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
                           checked
-                            ? 'bg-blue-600 text-white shadow-2xs'
+                            ? 'bg-teal-600 text-white shadow-2xs'
                             : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
                         }`}
                       >
@@ -666,19 +666,19 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
               </div>
 
               {/* Inter-facility Concurrent Position Section (パターン2 & 3) */}
-              <div className="bg-purple-50/70 p-3.5 rounded-2xl border border-purple-200 space-y-3">
+              <div className="bg-sky-50/70 p-3.5 rounded-2xl border border-sky-200 space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-xs font-bold text-purple-950 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-bold text-sky-950 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={otherFacilityConcurrent}
                       onChange={(e) => setOtherFacilityConcurrent(e.target.checked)}
-                      className="w-4 h-4 text-purple-600 rounded-sm"
+                      className="w-4 h-4 text-sky-600 rounded-sm"
                     />
                     <span>他事業所（別施設・外部事業所）との兼務あり</span>
                   </label>
                   {otherFacilityConcurrent && (
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-200 text-purple-800">
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-200 text-sky-800">
                       {roles.length > 1 ? 'パターン3: 両方兼務' : 'パターン2: 他事業所兼務'}
                     </span>
                   )}
@@ -688,7 +688,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                   <div className="space-y-3 pt-1">
                     {/* Other Facility Name */}
                     <div>
-                      <label className="block text-[11px] font-bold text-purple-900 mb-1">
+                      <label className="block text-[11px] font-bold text-sky-900 mb-1">
                         兼務先事業所名
                       </label>
                       <input
@@ -696,23 +696,23 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                         value={otherFacilityName}
                         onChange={(e) => setOtherFacilityName(e.target.value)}
                         placeholder="例: デイサービス あおい, 訪問介護サクラ"
-                        className="w-full px-3 py-1.5 bg-white rounded-xl border border-purple-200 text-xs font-medium focus:border-purple-600 outline-hidden"
+                        className="w-full px-3 py-1.5 bg-white rounded-xl border border-sky-200 text-xs font-medium focus:border-teal-600 outline-hidden"
                       />
                     </div>
 
                     {/* Schedule Mode Selector (曜日 vs 日付) */}
                     <div>
-                      <label className="block text-[11px] font-bold text-purple-900 mb-1">
+                      <label className="block text-[11px] font-bold text-sky-900 mb-1">
                         当事業所の勤務指定方式 (デフォルト: 曜日設定)
                       </label>
-                      <div className="flex rounded-xl border border-purple-300 overflow-hidden text-xs font-bold bg-white">
+                      <div className="flex rounded-xl border border-sky-300 overflow-hidden text-xs font-bold bg-white">
                         <button
                           type="button"
                           onClick={() => setInterFacilityScheduleType('dow')}
                           className={`flex-1 py-1.5 text-center transition cursor-pointer ${
                             interFacilityScheduleType === 'dow'
-                              ? 'bg-purple-600 text-white'
-                              : 'text-purple-700 hover:bg-purple-50'
+                              ? 'bg-sky-600 text-white'
+                              : 'text-sky-700 hover:bg-sky-50'
                           }`}
                         >
                           曜日設定 (毎週固定)
@@ -722,8 +722,8 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                           onClick={() => setInterFacilityScheduleType('date')}
                           className={`flex-1 py-1.5 text-center transition cursor-pointer ${
                             interFacilityScheduleType === 'date'
-                              ? 'bg-purple-600 text-white'
-                              : 'text-purple-700 hover:bg-purple-50'
+                              ? 'bg-sky-600 text-white'
+                              : 'text-sky-700 hover:bg-sky-50'
                           }`}
                         >
                           日付設定 (具体日指定)
@@ -733,9 +733,9 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
                     {/* Schedule Settings View */}
                     {interFacilityScheduleType === 'dow' ? (
-                      <div className="bg-white p-2.5 rounded-xl border border-purple-200 space-y-1.5">
+                      <div className="bg-white p-2.5 rounded-xl border border-sky-200 space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-purple-900">
+                          <span className="text-[11px] font-bold text-sky-900">
                             当事業所での勤務曜日を選択（未選択は他事業所勤務日）
                           </span>
                           <button
@@ -744,7 +744,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                               if (interFacilityDays.length === 7) setInterFacilityDays([]);
                               else setInterFacilityDays([0, 1, 2, 3, 4, 5, 6]);
                             }}
-                            className="text-[10px] text-purple-600 font-bold hover:underline"
+                            className="text-[10px] text-teal-600 font-bold hover:underline"
                           >
                             {interFacilityDays.length === 7 ? '全解除' : '全選択'}
                           </button>
@@ -765,8 +765,8 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                                 }}
                                 className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                                   isAtThisFacility
-                                    ? 'bg-blue-600 text-white shadow-2xs'
-                                    : 'bg-purple-100 border border-purple-200 text-purple-700'
+                                    ? 'bg-teal-600 text-white shadow-2xs'
+                                    : 'bg-sky-100 border border-sky-200 text-sky-800'
                                 }`}
                               >
                                 <div>{dName}</div>
@@ -779,9 +779,9 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-white p-2.5 rounded-xl border border-purple-200 space-y-1.5">
+                      <div className="bg-white p-2.5 rounded-xl border border-sky-200 space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-purple-900">
+                          <span className="text-[11px] font-bold text-sky-900">
                             当事業所での勤務日付（1〜31日）を選択
                           </span>
                           <div className="flex gap-2 text-[10px]">
@@ -790,14 +790,14 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                               onClick={() =>
                                 setInterFacilityDates(Array.from({ length: 30 }, (_, i) => i + 1))
                               }
-                              className="text-purple-600 font-bold hover:underline"
+                              className="text-teal-600 font-bold hover:underline"
                             >
                               全日（当事業所）
                             </button>
                             <button
                               type="button"
                               onClick={() => setInterFacilityDates([])}
-                              className="text-purple-600 font-bold hover:underline"
+                              className="text-teal-600 font-bold hover:underline"
                             >
                               クリア
                             </button>
@@ -819,8 +819,8 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                                 }}
                                 className={`py-1 rounded-md text-[11px] font-bold transition cursor-pointer ${
                                   isAtThisFacility
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                                    ? 'bg-teal-600 text-white'
+                                    : 'bg-sky-100 text-sky-800 hover:bg-sky-200'
                                 }`}
                               >
                                 {d}
@@ -855,7 +855,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                         }}
                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
                           checked
-                            ? 'bg-indigo-600 text-white'
+                            ? 'bg-teal-600 text-white'
                             : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
                         }`}
                       >
@@ -952,8 +952,8 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
                             ? idx === 0
                               ? 'bg-red-600 text-white'
                               : idx === 6
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-800 text-white'
+                              ? 'bg-sky-600 text-white'
+                              : 'bg-slate-600 text-white'
                             : 'bg-white border border-gray-200 text-gray-400'
                         }`}
                       >
@@ -1021,7 +1021,7 @@ export const StaffTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
                 保存する
               </button>

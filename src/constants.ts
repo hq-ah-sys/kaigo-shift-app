@@ -18,7 +18,7 @@ export const SP_TEXT_COLOR: Record<string, string> = {
   有休: '#ffffff',
   希望休: '#78350f',
   公休: '#475569',
-  明け: '#1e3a8a',
+  明け: '#0c4a6e',
   他事業所: '#475569', // Dark text matching 公休
   午前休: '#ffffff',
   午後休: '#ffffff',
@@ -53,26 +53,26 @@ export const MAT_COLOR: Record<number, string> = {
 };
 
 export const PATTERN_COLORS = [
-  '#2563eb', // Blue
-  '#f59e0b', // Amber
-  '#7c3aed', // Purple
-  '#0f172a', // Slate Night
-  '#db2777', // Pink
-  '#0d9488', // Teal
-  '#dc2626', // Red
-  '#16a34a', // Green
-  '#ea580c', // Orange
-  '#4f46e5', // Indigo
   '#0284c7', // Sky Blue
-  '#059669', // Emerald
-  '#d97706', // Amber dark
-  '#9333ea', // Purple dark
-  '#e11d48', // Rose
-  '#475569', // Slate
+  '#0d9488', // Teal
+  '#f59e0b', // Amber
+  '#475569', // Calm Slate
+  '#10b981', // Emerald
   '#0891b2', // Cyan
+  '#ea580c', // Soft Coral Orange
+  '#16a34a', // Green
+  '#2563eb', // Blue
+  '#64748b', // Muted Slate
+  '#059669', // Emerald Deep
+  '#d97706', // Amber Deep
+  '#db2777', // Rose Pink
+  '#dc2626', // Red
+  '#e11d48', // Rose
   '#65a30d', // Lime
-  '#c026d3', // Fuchsia
-  '#57534e', // Stone
+  '#57534e', // Warm Stone
+  '#0369a1', // Ocean Sky
+  '#0f766e', // Deep Teal
+  '#6366f1', // Soft Periwinkle
 ];
 
 export const FACILITY_TYPES: FacilityTypeConfig[] = [
@@ -232,9 +232,9 @@ export function getInitialDemoState(): AppState {
     },
     shiftPatterns: [
       { id: 1, facilityId: 1, key: '早', name: '早番', start: '07:00', end: '16:00', color: '#f59e0b', dispMode: 'default' },
-      { id: 2, facilityId: 1, key: '日', name: '日勤', start: '09:00', end: '18:00', color: '#2563eb', dispMode: 'default' },
-      { id: 3, facilityId: 1, key: '遅', name: '遅番', start: '13:00', end: '22:00', color: '#7c3aed', dispMode: 'default' },
-      { id: 4, facilityId: 1, key: '夜', name: '夜勤', start: '17:00', end: '09:00', color: '#0f172a', dispMode: 'default' },
+      { id: 2, facilityId: 1, key: '日', name: '日勤', start: '09:00', end: '18:00', color: '#0284c7', dispMode: 'default' },
+      { id: 3, facilityId: 1, key: '遅', name: '遅番', start: '13:00', end: '22:00', color: '#0d9488', dispMode: 'default' },
+      { id: 4, facilityId: 1, key: '夜', name: '夜勤', start: '17:00', end: '09:00', color: '#475569', dispMode: 'default' },
     ],
     staff: [
       {
