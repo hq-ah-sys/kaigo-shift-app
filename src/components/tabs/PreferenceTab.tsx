@@ -376,8 +376,8 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                 onClick={() => setPresetType('希望休')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
                   presetType === '希望休'
-                    ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
-                    : 'bg-white text-amber-900 border-amber-300 hover:bg-amber-50'
+                    ? 'bg-[#7d4a51] text-white border-[#7d4a51] shadow-xs'
+                    : 'bg-white text-[#6b3a41] border-[#d4b8bd] hover:bg-[#f6eff0]'
                 }`}
               >
                 希望休
@@ -458,7 +458,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
               <span>有休</span>
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="w-4 h-4 rounded bg-amber-400 text-amber-900 text-[10px] font-black flex items-center justify-center">
+              <span className="w-4 h-4 rounded bg-[#e4d0d3] text-[#6b3a41] border border-[#d4b8bd] text-[10px] font-black flex items-center justify-center">
                 希
               </span>
               <span>希望休</span>
@@ -527,7 +527,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
             let bgClass = 'bg-white hover:border-teal-400';
             if (val === '有休') bgClass = 'bg-emerald-100/75 border-emerald-300';
-            else if (val === '希望休') bgClass = 'bg-amber-100/75 border-amber-300';
+            else if (val === '希望休') bgClass = 'bg-[#f5ecee] border-[#d4b8bd]';
             else if (isMae) bgClass = 'bg-teal-100/75 border-teal-300';
             else if (isAto) bgClass = 'bg-sky-100/75 border-sky-300';
             else if (timeVal) bgClass = 'bg-cyan-100/75 border-cyan-300';
@@ -570,7 +570,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
                     </div>
                   )}
                   {val === '希望休' && (
-                    <div className="px-2 py-0.5 rounded-md bg-amber-400 text-amber-900 font-black text-center text-xs">
+                    <div className="px-2 py-0.5 rounded-md bg-[#e4d0d3] text-[#6b3a41] border border-[#d4b8bd] font-black text-center text-xs">
                       希望休
                     </div>
                   )}
@@ -639,7 +639,7 @@ export const PreferenceTab: React.FC<Props> = ({ state, onUpdateState }) => {
 
               let badgeClass = 'bg-cyan-100 text-cyan-800';
               if (p.type === '有休') badgeClass = 'bg-emerald-100 text-emerald-800';
-              else if (p.type === '希望休') badgeClass = 'bg-amber-100 text-amber-900';
+              else if (p.type === '希望休') badgeClass = 'bg-[#f0e3e5] text-[#6b3a41]';
               else if (isMae) badgeClass = 'bg-teal-100 text-teal-800';
               else if (isAto) badgeClass = 'bg-sky-100 text-sky-800';
 

@@ -598,7 +598,10 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <span>有給休暇 (0h)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-5 h-5 rounded bg-amber-400 text-amber-900 font-bold text-[11px] flex items-center justify-center">
+            <span
+              className="w-5 h-5 rounded font-bold text-[11px] flex items-center justify-center border border-[#d4b8bd]"
+              style={{ backgroundColor: SP_COLOR['希望休'], color: SP_TEXT_COLOR['希望休'] }}
+            >
               希
             </span>
             <span>希望休 (0h)</span>
@@ -874,7 +877,8 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
                           bg = '#f1f5f9';
                           tc = '#64748b';
                         } else if (key === '希望休') {
-                          tc = '#78350f';
+                          bg = SP_COLOR['希望休'] || '#e4d0d3';
+                          tc = SP_TEXT_COLOR['希望休'] || '#6b3a41';
                         } else if (isNightOff) {
                           bg = '#bae6fd';
                           tc = '#0c4a6e';

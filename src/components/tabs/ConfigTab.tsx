@@ -6,6 +6,8 @@ import {
   downloadFile,
   pickFileToRead,
 } from '../../utils/fileStorage';
+import { GasSyncPanel } from '../GasSyncPanel';
+import { SyncConfig, SyncFacilityEntry, SyncFacilityMeta } from '../../utils/gasSync';
 import {
   Settings,
   Key,
@@ -23,9 +25,35 @@ import {
 interface Props {
   state: AppState;
   onUpdateState: (updater: (prev: AppState) => AppState) => void;
+  syncConfig: SyncConfig;
+  syncMeta: SyncFacilityMeta;
+  isOnline: boolean;
+  isSyncing: boolean;
+  syncError: string | null;
+  onUpdateSyncConfig: (next: SyncConfig) => void;
+  onManualPush: (force?: boolean) => Promise<void>;
+  onManualPull: () => Promise<void>;
+  onSwitchFacility: (facilityKey: string) => Promise<void>;
+  onCreateFacility: (
+    entry: SyncFacilityEntry,
+    templateMode: 'copy_patterns' | 'demo' | 'from_drive'
+  ) => Promise<void>;
 }
 
-export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
+export const ConfigTab: React.FC<Props> = ({
+  state,
+  onUpdateState,
+  syncConfig,
+  syncMeta,
+  isOnline,
+  isSyncing,
+  syncError,
+  onUpdateSyncConfig,
+  onManualPush,
+  onManualPull,
+  onSwitchFacility,
+  onCreateFacility,
+}) => {
   const [geminiModel, setGeminiModel] = useState(state.aiConfig.geminiModel || 'gemini-3.8-flash');
   const [testResult, setTestResult] = useState<{ success: boolean; msg: string } | null>(null);
   const [testing, setTesting] = useState(false);
@@ -189,11 +217,26 @@ export const ConfigTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div>
             <h2 className="text-lg font-bold text-gray-900">システム設定</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              データのバックアップと復元、ブラウザ内自動保存、AI設定を行います
+              拠点間のGoogle Drive自動共有、データのバックアップと復元、ブラウザ内自動保存、AI設定を行います
             </p>
           </div>
         </div>
       </div>
+
+      {/* ☁️ Google Drive GAS Sync Card */}
+      <GasSyncPanel
+        syncConfig={syncConfig}
+        syncMeta={syncMeta}
+        isOnline={isOnline}
+        isSyncing={isSyncing}
+        syncError={syncError}
+        state={state}
+        onUpdateSyncConfig={onUpdateSyncConfig}
+        onManualPush={onManualPush}
+        onManualPull={onManualPull}
+        onSwitchFacility={onSwitchFacility}
+        onCreateFacility={onCreateFacility}
+      />
 
       {/* 💾 Backup & Restore Card */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-5">

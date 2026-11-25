@@ -97,7 +97,7 @@ function getShiftCellStyle(key: string, patterns: ShiftPattern[]): ShiftStyle {
     return { bgArgb: 'FFD1FAE5', fgArgb: 'FF065F46', bold: true, fontSize: 10.5 }; // Emerald green
   }
   if (key === '希' || key === '希望休') {
-    return { bgArgb: 'FFFFEDD5', fgArgb: 'FF9A3412', bold: true, fontSize: 10.5 }; // Light orange
+    return { bgArgb: 'FFF0E1E3', fgArgb: 'FF6B3A41', bold: true, fontSize: 10.5 }; // Muted dusty rose
   }
   if (key === '休' || key === '公休') {
     return { bgArgb: 'FFF1F5F9', fgArgb: 'FF64748B', bold: false, fontSize: 10 }; // Muted slate

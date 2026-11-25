@@ -384,8 +384,8 @@ export const PatternsTab: React.FC<Props> = ({ state, onUpdateState }) => {
             <div className="font-bold text-gray-900 mt-1">有給休暇 (0h)</div>
             <div className="text-[11px] text-gray-500">年次有給休暇の取得</div>
           </div>
-          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-            <span className="font-black text-amber-700 text-sm">希</span>
+          <div className="p-3 rounded-xl bg-[#f6eff0] border border-[#e2cfd2]">
+            <span className="font-black text-[#6b3a41] text-sm">希</span>
             <div className="font-bold text-gray-900 mt-1">希望休 (0h)</div>
             <div className="text-[11px] text-gray-500">職員の事前希望による公休</div>
           </div>

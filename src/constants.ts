@@ -6,7 +6,7 @@ export const SPECIAL_SHIFTS = ['有休', '希望休', '公休', '明け', '他�
 
 export const SP_COLOR: Record<string, string> = {
   有休: '#10b981', // Emerald green
-  希望休: '#f59e0b', // Amber
+  希望休: '#e4d0d3', // Muted dusty rose (subdued day-off tone)
   公休: '#e2e8f0', // Slate 200
   明け: '#93c5fd', // Blue 300
   他事業所: '#e2e8f0', // Light gray matching 公休
@@ -16,7 +16,7 @@ export const SP_COLOR: Record<string, string> = {
 
 export const SP_TEXT_COLOR: Record<string, string> = {
   有休: '#ffffff',
-  希望休: '#78350f',
+  希望休: '#6b3a41',
   公休: '#475569',
   明け: '#0c4a6e',
   他事業所: '#475569', // Dark text matching 公休

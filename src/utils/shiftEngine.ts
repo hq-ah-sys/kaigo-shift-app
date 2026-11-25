@@ -942,6 +942,9 @@ export function generateShifts(state: AppState): Record<number, Record<number, s
       return { maxMat, avgMat: count > 0 ? sumMat / count : 0, count };
     };
 
+    const isRestForPair = (k: string | undefined): boolean =>
+      k === '公休' || k === '希望休' || k === '有休';
+
     // Composite score for assigning staff `s` on `day` (lower score = higher priority / better fit)
     const scoreDayForStaff = (s: Staff, day: number, shiftKey?: string): number => {
       const mRatio = getMonthH(s) / Math.max(1, monthHLimit(s));
@@ -955,11 +958,38 @@ export function generateShifts(state: AppState): Record<number, Record<number, s
       score += wRatio * 45;
       score += mRatio * 35;
 
-      if (consecAfter === 1) score += 2;
-      else if (consecAfter === 2) score += 4;
-      else if (consecAfter === 3) score += 10;
-      else if (consecAfter === 4) score += 26;
-      else score += 50;
+      // Cluster work gently (2-3 days) instead of scattering 1-day work islands across rest days
+      if (consecAfter === 1) score += 4;
+      else if (consecAfter === 2) score += 2;
+      else if (consecAfter === 3) score += 5;
+      else if (consecAfter === 4) score += 16;
+      else score += 40;
+
+      // Preserve 2+ consecutive 公休/休 blocks; prefer filling already-isolated single 公休 or trimming the edge of 3+ day blocks
+      let restBefore = 0;
+      for (let i = day - 1; i >= 1; i--) {
+        if (isRestForPair(newShifts[s.id][i])) restBefore++;
+        else break;
+      }
+      let restAfter = 0;
+      for (let i = day + 1; i <= days; i++) {
+        if (isRestForPair(newShifts[s.id][i])) restAfter++;
+        else break;
+      }
+
+      if (restBefore === 1 && restAfter === 1) {
+        // Splitting a 3-day rest block into two isolated 1-day rests
+        score += 32;
+      } else if (restBefore === 1 || restAfter === 1) {
+        // Stranding an adjacent single 公休 (including post-明け 公休 at d+2)
+        score += 22;
+      } else if (restBefore === 0 && restAfter === 0) {
+        // Eliminating an isolated 1-day rest
+        score -= 6;
+      } else if ((restBefore >= 2 && restAfter === 0) || (restBefore === 0 && restAfter >= 2)) {
+        // Assigning at the edge adjacent to existing work keeps a 2+ day rest block intact
+        score -= 5;
+      }
 
       score += dayStaffCnt * 8;
 
@@ -1116,10 +1146,16 @@ export function generateShifts(state: AppState): Record<number, Record<number, s
             if (!a.nightOnly && b.nightOnly) return 1;
             const distA = minDistanceToOtherNight(a, d);
             const distB = minDistanceToOtherNight(b, d);
-            const closePenaltyA = distA < 4 ? (4 - distA) * 3 : 0;
-            const closePenaltyB = distB < 4 ? (4 - distB) * 3 : 0;
-            const scoreA = countNights(a) * 2 + closePenaltyA + (getMonthH(a) / Math.max(1, monthHLimit(a))) * 3;
-            const scoreB = countNights(b) * 2 + closePenaltyB + (getMonthH(b) / Math.max(1, monthHLimit(b))) * 3;
+            const closePenaltyA = distA < 6 ? (6 - distA) * 5 : 0;
+            const closePenaltyB = distB < 6 ? (6 - distB) * 5 : 0;
+            const strandPenaltyA =
+              d > 2 && isRestForPair(newShifts[a.id][d - 1]) && !isRestForPair(newShifts[a.id][d - 2]) ? 6 : 0;
+            const strandPenaltyB =
+              d > 2 && isRestForPair(newShifts[b.id][d - 1]) && !isRestForPair(newShifts[b.id][d - 2]) ? 6 : 0;
+            const scoreA =
+              countNights(a) * 2 + closePenaltyA + strandPenaltyA + (getMonthH(a) / Math.max(1, monthHLimit(a))) * 3;
+            const scoreB =
+              countNights(b) * 2 + closePenaltyB + strandPenaltyB + (getMonthH(b) / Math.max(1, monthHLimit(b))) * 3;
             return scoreA - scoreB;
           });
 
@@ -1432,6 +1468,315 @@ export function generateShifts(state: AppState): Record<number, Record<number, s
 
       const chosen = UnderscheduledStaff[0];
       newShifts[chosen.s.id][chosen.bestDay] = chosen.bestKey;
+    }
+
+    // =========================================================================
+    // PASS 6: Consecutive 公休 (2-Day Off Block) Optimization
+    // Merges isolated single 公休 days into 2+ consecutive days off via
+    // constraint-safe single-staff moves and pairwise staff swaps.
+    // =========================================================================
+    const countIsolatedKyu = (staffId: number): number => {
+      let cnt = 0;
+      for (let d = 1; d <= days; d++) {
+        if (newShifts[staffId][d] !== '公休') continue;
+        const prevOff = d > 1 && isRestForPair(newShifts[staffId][d - 1]);
+        const nextOff = d < days && isRestForPair(newShifts[staffId][d + 1]);
+        if (!prevOff && !nextOff) cnt++;
+      }
+      return cnt;
+    };
+
+    const isDayKyuMovableToWork = (s: Staff, d: number): boolean => {
+      if (d < 1 || d > days) return false;
+      if (lockedSet.has(s.id)) return false;
+      if (newShifts[s.id][d] !== '公休') return false;
+      if (prefLockedStaffDays.has(`${s.id}-${d}`)) return false;
+      if (ruleLockedStaffDays.has(`${s.id}-${d}`)) return false;
+      if (forcedLeaveStaffDays.has(`${s.id}-${d}`)) return false;
+      if (postNightRestDays.has(`${s.id}-${d}`)) return false;
+      return isFacilityOpenDay(fc, d);
+    };
+
+    const isWorkDayMovableToKyu = (s: Staff, d: number): boolean => {
+      if (d < 1 || d > days) return false;
+      if (lockedSet.has(s.id)) return false;
+      if (prefLockedStaffDays.has(`${s.id}-${d}`)) return false;
+      if (ruleLockedStaffDays.has(`${s.id}-${d}`)) return false;
+      const k = newShifts[s.id][d];
+      if (!isWorkShift(k)) return false;
+      if (nightPats.some((p) => p.key === k)) return false;
+      if (k === '前休' || k === '後休' || k === '午前休' || k === '午後休') return false;
+      return true;
+    };
+
+    const hasOtherPatternOnDay = (d: number, excludeStaffId: number, patKey: string): boolean =>
+      fcStaff.some((st) => st.id !== excludeStaffId && newShifts[st.id][d] === patKey);
+
+    const hasOtherSkillLeaderOnDay = (d: number, excludeStaffId: number): boolean =>
+      fcStaff.some((st) => st.id !== excludeStaffId && isWorkShift(newShifts[st.id][d]) && (st.mat || 3) >= 3);
+
+    for (let passIter = 0; passIter < 4; passIter++) {
+      let improvedInPass = false;
+
+      for (const s of fcStaff) {
+        if (lockedSet.has(s.id) || s.nightOnly) continue;
+
+        let safetyInner = 0;
+        while (safetyInner < days) {
+          safetyInner++;
+          const beforeIso = countIsolatedKyu(s.id);
+          if (beforeIso === 0) break;
+
+          // Collect candidate rest days to turn into work (`dOff`) and work days adjacent to a rest day (`dAdj`)
+          const kyuCandidates: number[] = [];
+          const adjWorkCandidates: number[] = [];
+
+          for (let d = 1; d <= days; d++) {
+            if (isDayKyuMovableToWork(s, d)) {
+              kyuCandidates.push(d);
+            }
+            if (isWorkDayMovableToKyu(s, d)) {
+              const prevIsRest = d > 1 && isRestForPair(newShifts[s.id][d - 1]);
+              const nextIsRest = d < days && isRestForPair(newShifts[s.id][d + 1]);
+              if (prevIsRest || nextIsRest) {
+                adjWorkCandidates.push(d);
+              }
+            }
+          }
+
+          if (kyuCandidates.length === 0 || adjWorkCandidates.length === 0) break;
+
+          let bestApplied = false;
+
+          // 6A: Single-staff move (only move from a day with equal/higher staff count so coverage remains balanced)
+          let bestMove: {
+            dAdj: number;
+            dOff: number;
+            newKey: string;
+            handoffStaffId?: number;
+            handoffKey?: string;
+            score: number;
+          } | null = null;
+
+          const findPatternHandoff = (d: number, excludeStaffId: number, targetPat: ShiftPattern): Staff | undefined => {
+            return fcStaff.find((st) => {
+              if (st.id === excludeStaffId || lockedSet.has(st.id)) return false;
+              if (prefLockedStaffDays.has(`${st.id}-${d}`) || ruleLockedStaffDays.has(`${st.id}-${d}`)) return false;
+              const curK = newShifts[st.id][d];
+              const curPat = getPatternByKey(curK, fc.id, shiftPatterns);
+              if (!curPat || isNight(curPat)) return false;
+              if (earlyPat && curPat.key === earlyPat.key && !hasOtherPatternOnDay(d, st.id, earlyPat.key)) return false;
+              if (latePat && curPat.key === latePat.key && !hasOtherPatternOnDay(d, st.id, latePat.key)) return false;
+              if (Math.abs(netHours(targetPat) - netHours(curPat)) > 0.25) return false;
+              return !isPatternExcludedForStaff(st, targetPat.key) && isStaffAvailable(st, year, month, d, targetPat);
+            });
+          };
+
+          for (const dAdj of adjWorkCandidates) {
+            const origKey = newShifts[s.id][dAdj];
+            const origH = getStaffDayNetH(s.id, dAdj, origKey, fc.id, shiftPatterns, parsedRules);
+            const sRatio = getStaffRoleAllocationRatio(s, ratioRoles);
+
+            if (calcCareOnDuty(dAdj) - sRatio < neededRatio - 0.001) continue;
+            if ((s.mat || 3) >= 3 && !hasOtherSkillLeaderOnDay(dAdj, s.id)) continue;
+
+            let handoffStaff: Staff | undefined;
+            let handoffKey: string | undefined;
+
+            if (earlyPat && origKey === earlyPat.key && !hasOtherPatternOnDay(dAdj, s.id, earlyPat.key)) {
+              handoffStaff = findPatternHandoff(dAdj, s.id, earlyPat);
+              if (!handoffStaff) continue;
+              handoffKey = earlyPat.key;
+            }
+            if (latePat && origKey === latePat.key && !hasOtherPatternOnDay(dAdj, s.id, latePat.key)) {
+              handoffStaff = findPatternHandoff(dAdj, s.id, latePat);
+              if (!handoffStaff) continue;
+              handoffKey = latePat.key;
+            }
+
+            const adjCount = countWorkingStaffOnDay(dAdj);
+            const adjCare = calcCareOnDuty(dAdj);
+
+            for (const dOff of kyuCandidates) {
+              if (dOff === dAdj) continue;
+              // Never widen daily headcount gap by moving from sparser day to busier day
+              if (adjCount - 1 < countWorkingStaffOnDay(dOff)) continue;
+
+              const origPat = getPatternByKey(origKey, fc.id, shiftPatterns);
+              const candidateKey = origKey.startsWith('time:')
+                ? origKey
+                : getStaffWorkShiftKey(s, dOff, origPat || stdDayPat);
+              const newH = getStaffDayNetH(s.id, dOff, candidateKey, fc.id, shiftPatterns, parsedRules);
+              if (Math.abs(newH - origH) > 0.25) continue;
+
+              // Temporarily apply to evaluate all hard constraints and isolated 公休 count
+              newShifts[s.id][dAdj] = '公休';
+              const canPlace = canAssignShift(s, dOff, candidateKey);
+              let afterIso = beforeIso;
+              if (canPlace) {
+                newShifts[s.id][dOff] = candidateKey;
+                afterIso = countIsolatedKyu(s.id);
+                newShifts[s.id][dOff] = '公休';
+              }
+              newShifts[s.id][dAdj] = origKey;
+
+              if (!canPlace || afterIso >= beforeIso) continue;
+
+              const sameWeekBonus =
+                Math.floor((dAdj - 1 - dayOfWeekIdx(year, month, dAdj)) / 7) ===
+                Math.floor((dOff - 1 - dayOfWeekIdx(year, month, dOff)) / 7)
+                  ? -20
+                  : 0;
+              const moveScore =
+                (beforeIso - afterIso) * -100 +
+                sameWeekBonus +
+                (countWorkingStaffOnDay(dOff) - adjCount) * 10 +
+                (calcCareOnDuty(dOff) - adjCare) * 5 +
+                Math.abs(dOff - dAdj);
+
+              if (!bestMove || moveScore < bestMove.score) {
+                bestMove = {
+                  dAdj,
+                  dOff,
+                  newKey: candidateKey,
+                  handoffStaffId: handoffStaff?.id,
+                  handoffKey,
+                  score: moveScore,
+                };
+              }
+            }
+          }
+
+          if (bestMove) {
+            newShifts[s.id][bestMove.dAdj] = '公休';
+            newShifts[s.id][bestMove.dOff] = bestMove.newKey;
+            if (bestMove.handoffStaffId !== undefined && bestMove.handoffKey) {
+              newShifts[bestMove.handoffStaffId][bestMove.dAdj] = bestMove.handoffKey;
+            }
+            improvedInPass = true;
+            bestApplied = true;
+          }
+
+          if (bestApplied) continue;
+
+          // 6B: Pairwise swap with another staff member (preserves exact daily headcount & coverage)
+          let bestSwap: {
+            other: Staff;
+            dAdj: number;
+            dOff: number;
+            newKey1: string;
+            newKey2: string;
+            score: number;
+          } | null = null;
+
+          for (const dAdj of adjWorkCandidates) {
+            const origKey1 = newShifts[s.id][dAdj];
+            const origH1 = getStaffDayNetH(s.id, dAdj, origKey1, fc.id, shiftPatterns, parsedRules);
+            const beforeCareAdj = calcCareOnDuty(dAdj);
+            const beforeHasEarlyAdj = Boolean(earlyPat && fcStaff.some((st) => newShifts[st.id][dAdj] === earlyPat.key));
+            const beforeHasLateAdj = Boolean(latePat && fcStaff.some((st) => newShifts[st.id][dAdj] === latePat.key));
+            const beforeLeaderAdj = getDaySkillStats(dAdj).maxMat >= 3;
+
+            for (const dOff of kyuCandidates) {
+              if (dOff === dAdj) continue;
+              const beforeCareOff = calcCareOnDuty(dOff);
+              const beforeHasEarlyOff = Boolean(earlyPat && fcStaff.some((st) => newShifts[st.id][dOff] === earlyPat.key));
+              const beforeHasLateOff = Boolean(latePat && fcStaff.some((st) => newShifts[st.id][dOff] === latePat.key));
+              const beforeLeaderOff = getDaySkillStats(dOff).maxMat >= 3;
+
+              for (const other of fcStaff) {
+                if (other.id === s.id || lockedSet.has(other.id) || other.nightOnly) continue;
+                if (!isWorkDayMovableToKyu(other, dOff)) continue;
+                if (!isDayKyuMovableToWork(other, dAdj)) continue;
+
+                const origKey2 = newShifts[other.id][dOff];
+                const origH2 = getStaffDayNetH(other.id, dOff, origKey2, fc.id, shiftPatterns, parsedRules);
+                const beforeIso2 = countIsolatedKyu(other.id);
+
+                // Match patterns if either day needs early/late coverage
+                const origPat2 = getPatternByKey(origKey2, fc.id, shiftPatterns);
+                const origPat1 = getPatternByKey(origKey1, fc.id, shiftPatterns);
+                const newKey1 = origKey2.startsWith('time:')
+                  ? getStaffWorkShiftKey(s, dOff, stdDayPat)
+                  : getStaffWorkShiftKey(s, dOff, origPat2 || stdDayPat);
+                const newKey2 = origKey1.startsWith('time:')
+                  ? getStaffWorkShiftKey(other, dAdj, stdDayPat)
+                  : getStaffWorkShiftKey(other, dAdj, origPat1 || stdDayPat);
+
+                const newH1 = getStaffDayNetH(s.id, dOff, newKey1, fc.id, shiftPatterns, parsedRules);
+                const newH2 = getStaffDayNetH(other.id, dAdj, newKey2, fc.id, shiftPatterns, parsedRules);
+                if (Math.abs(newH1 - origH1) > 0.25 || Math.abs(newH2 - origH2) > 0.25) continue;
+
+                // Tentatively clear both and validate hard constraints
+                newShifts[s.id][dAdj] = '公休';
+                newShifts[other.id][dOff] = '公休';
+
+                const valid1 = canAssignShift(s, dOff, newKey1);
+                const valid2 = canAssignShift(other, dAdj, newKey2);
+
+                let swapOk = false;
+                let afterIso1 = beforeIso;
+                let afterIso2 = beforeIso2;
+
+                if (valid1 && valid2) {
+                  newShifts[s.id][dOff] = newKey1;
+                  newShifts[other.id][dAdj] = newKey2;
+
+                  afterIso1 = countIsolatedKyu(s.id);
+                  afterIso2 = countIsolatedKyu(other.id);
+
+                  const careOkAdj = calcCareOnDuty(dAdj) >= Math.min(beforeCareAdj, neededRatio) - 0.001;
+                  const careOkOff = calcCareOnDuty(dOff) >= Math.min(beforeCareOff, neededRatio) - 0.001;
+                  const earlyOkAdj = !beforeHasEarlyAdj || Boolean(earlyPat && fcStaff.some((st) => newShifts[st.id][dAdj] === earlyPat.key));
+                  const earlyOkOff = !beforeHasEarlyOff || Boolean(earlyPat && fcStaff.some((st) => newShifts[st.id][dOff] === earlyPat.key));
+                  const lateOkAdj = !beforeHasLateAdj || Boolean(latePat && fcStaff.some((st) => newShifts[st.id][dAdj] === latePat.key));
+                  const lateOkOff = !beforeHasLateOff || Boolean(latePat && fcStaff.some((st) => newShifts[st.id][dOff] === latePat.key));
+                  const leaderOkAdj = !beforeLeaderAdj || getDaySkillStats(dAdj).maxMat >= 3;
+                  const leaderOkOff = !beforeLeaderOff || getDaySkillStats(dOff).maxMat >= 3;
+
+                  swapOk =
+                    afterIso1 < beforeIso &&
+                    afterIso2 <= beforeIso2 &&
+                    careOkAdj &&
+                    careOkOff &&
+                    earlyOkAdj &&
+                    earlyOkOff &&
+                    lateOkAdj &&
+                    lateOkOff &&
+                    leaderOkAdj &&
+                    leaderOkOff;
+                }
+
+                // Restore state before evaluating next candidate
+                newShifts[s.id][dAdj] = origKey1;
+                newShifts[s.id][dOff] = '公休';
+                newShifts[other.id][dOff] = origKey2;
+                newShifts[other.id][dAdj] = '公休';
+
+                if (!swapOk) continue;
+
+                const swapScore =
+                  (beforeIso - afterIso1 + (beforeIso2 - afterIso2)) * -100 + Math.abs(dOff - dAdj);
+                if (!bestSwap || swapScore < bestSwap.score) {
+                  bestSwap = { other, dAdj, dOff, newKey1, newKey2, score: swapScore };
+                }
+              }
+            }
+          }
+
+          if (bestSwap) {
+            newShifts[s.id][bestSwap.dAdj] = '公休';
+            newShifts[s.id][bestSwap.dOff] = bestSwap.newKey1;
+            newShifts[bestSwap.other.id][bestSwap.dOff] = '公休';
+            newShifts[bestSwap.other.id][bestSwap.dAdj] = bestSwap.newKey2;
+            improvedInPass = true;
+          } else {
+            break;
+          }
+        }
+      }
+
+      if (!improvedInPass) break;
     }
   });
 
