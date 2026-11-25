@@ -38,6 +38,11 @@ interface Props {
     entry: SyncFacilityEntry,
     templateMode: 'copy_patterns' | 'demo' | 'from_drive'
   ) => Promise<void>;
+  onRenameFacility: (
+    oldKey: string,
+    updatedEntry: SyncFacilityEntry,
+    options?: { deleteOldOnDrive?: boolean }
+  ) => Promise<void>;
 }
 
 export const ConfigTab: React.FC<Props> = ({
@@ -53,6 +58,7 @@ export const ConfigTab: React.FC<Props> = ({
   onManualPull,
   onSwitchFacility,
   onCreateFacility,
+  onRenameFacility,
 }) => {
   const [geminiModel, setGeminiModel] = useState(state.aiConfig.geminiModel || 'gemini-3.8-flash');
   const [testResult, setTestResult] = useState<{ success: boolean; msg: string } | null>(null);
@@ -236,6 +242,7 @@ export const ConfigTab: React.FC<Props> = ({
         onManualPull={onManualPull}
         onSwitchFacility={onSwitchFacility}
         onCreateFacility={onCreateFacility}
+        onRenameFacility={onRenameFacility}
       />
 
       {/* 💾 Backup & Restore Card */}

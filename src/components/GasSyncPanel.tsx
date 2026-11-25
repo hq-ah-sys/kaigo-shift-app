@@ -4,10 +4,12 @@ import {
   SyncConfig,
   SyncFacilityEntry,
   SyncFacilityMeta,
+  DiscoveredDriveFacility,
   GAS_TEMPLATE_CODE,
   buildBranchShareUrl,
   gasPing,
   gasListFacilities,
+  gasDeleteFacility,
   sanitizeFacilityKey,
 } from '../utils/gasSync';
 import {
@@ -27,6 +29,7 @@ import {
   FolderSearch,
   Building2,
   Shield,
+  Pencil,
 } from 'lucide-react';
 
 interface Props {
@@ -44,6 +47,11 @@ interface Props {
     entry: SyncFacilityEntry,
     templateMode: 'copy_patterns' | 'demo' | 'from_drive'
   ) => Promise<void>;
+  onRenameFacility: (
+    oldKey: string,
+    updatedEntry: SyncFacilityEntry,
+    options?: { deleteOldOnDrive?: boolean }
+  ) => Promise<void>;
 }
 
 export const GasSyncPanel: React.FC<Props> = ({
@@ -57,6 +65,7 @@ export const GasSyncPanel: React.FC<Props> = ({
   onManualPull,
   onSwitchFacility,
   onCreateFacility,
+  onRenameFacility,
 }) => {
   const [urlInput, setUrlInput] = useState(syncConfig.gasUrl || '');
   const [showScript, setShowScript] = useState(!syncConfig.gasUrl);
@@ -75,9 +84,16 @@ export const GasSyncPanel: React.FC<Props> = ({
 
   // Drive discovery
   const [discovering, setDiscovering] = useState(false);
-  const [driveFiles, setDriveFiles] = useState<
-    Array<{ facilityKey: string; facilityName: string; revision: number; updatedAt: number; hasPasscode: boolean }>
-  >([]);
+  const [hasSearchedDrive, setHasSearchedDrive] = useState(false);
+  const [driveFiles, setDriveFiles] = useState<DiscoveredDriveFacility[]>([]);
+
+  // Inline edit facility
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editLabel, setEditLabel] = useState('');
+  const [editNewKey, setEditNewKey] = useState('');
+  const [editPasscode, setEditPasscode] = useState('');
+  const [deleteOldOnDrive, setDeleteOldOnDrive] = useState(true);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const handleCopyScript = async () => {
     try {
@@ -183,29 +199,83 @@ export const GasSyncPanel: React.FC<Props> = ({
     }
   };
 
-  const handleRemoveFacility = (key: string) => {
+  const handleRemoveFacility = async (entry: SyncFacilityEntry) => {
     if (syncConfig.facilities.length <= 1) return;
-    if (key === syncConfig.activeFacilityKey) {
+    if (entry.facilityKey === syncConfig.activeFacilityKey) {
       alert('現在表示中の拠点は削除できません。別の拠点に切り替えてから削除してください。');
       return;
     }
-    if (!window.confirm(`拠点リストから「${key}」を削除しますか？（Drive上のファイル自体は削除されません）`)) {
+    if (!window.confirm(`拠点リストから「${entry.label}（${entry.facilityKey}）」を削除しますか？`)) {
       return;
+    }
+    const activeUrl = urlInput.trim() || syncConfig.gasUrl;
+    if (activeUrl && isOnline) {
+      const alsoTrash = window.confirm(
+        `Google Drive上のファイル（${entry.fileName || `shift_${entry.facilityKey}.json`}）もゴミ箱へ移動しますか？\n（「キャンセル」を押すとアプリ内のリストからのみ削除します）`
+      );
+      if (alsoTrash) {
+        try {
+          await gasDeleteFacility(activeUrl, entry.facilityKey, entry.passcode || '', entry.fileName);
+        } catch {
+          // ignore if older GAS does not support delete
+        }
+      }
     }
     onUpdateSyncConfig({
       ...syncConfig,
-      facilities: syncConfig.facilities.filter((f) => f.facilityKey !== key),
+      facilities: syncConfig.facilities.filter((f) => f.facilityKey !== entry.facilityKey),
     });
+  };
+
+  const startEditFacility = (entry: SyncFacilityEntry) => {
+    setEditingKey(entry.facilityKey);
+    setEditLabel(entry.label);
+    setEditNewKey(entry.facilityKey);
+    setEditPasscode(entry.passcode || '');
+    setDeleteOldOnDrive(true);
+  };
+
+  const handleSaveEditFacility = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingKey) return;
+    const safeNewKey = sanitizeFacilityKey(editNewKey);
+    const label = editLabel.trim() || safeNewKey;
+    if (
+      safeNewKey !== editingKey &&
+      syncConfig.facilities.some((f) => f.facilityKey === safeNewKey)
+    ) {
+      alert(`拠点ID「${safeNewKey}」は既に登録されています`);
+      return;
+    }
+    const existing = syncConfig.facilities.find((f) => f.facilityKey === editingKey);
+    setSavingEdit(true);
+    try {
+      await onRenameFacility(
+        editingKey,
+        {
+          facilityKey: safeNewKey,
+          label,
+          passcode: editPasscode.trim(),
+          ...(safeNewKey === editingKey && existing?.fileName ? { fileName: existing.fileName } : {}),
+        },
+        { deleteOldOnDrive }
+      );
+      setEditingKey(null);
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   const handleDiscoverDrive = async () => {
     const activeUrl = urlInput.trim() || syncConfig.gasUrl;
     if (!activeUrl) return;
     setDiscovering(true);
+    setHasSearchedDrive(false);
     try {
       const res = await gasListFacilities(activeUrl);
       if (res.ok && Array.isArray(res.facilities)) {
         setDriveFiles(res.facilities);
+        setHasSearchedDrive(true);
       } else {
         setPingResult({ ok: false, msg: res.message || 'Drive一覧の取得に失敗しました' });
       }
@@ -216,24 +286,33 @@ export const GasSyncPanel: React.FC<Props> = ({
     }
   };
 
-  const handleImportDiscovered = (f: { facilityKey: string; facilityName: string; hasPasscode: boolean }) => {
+  const handleImportDiscovered = (f: DiscoveredDriveFacility) => {
+    const safeKey = sanitizeFacilityKey(f.facilityKey);
     const passcode = f.hasPasscode
-      ? window.prompt(`「${f.facilityName || f.facilityKey}」の合言葉（パスコード）を入力してください:`, '') || ''
+      ? window.prompt(`「${f.facilityName || safeKey}」の合言葉（パスコード）を入力してください:`, '') || ''
       : '';
-    if (!syncConfig.facilities.some((e) => e.facilityKey === f.facilityKey)) {
+    const existing = syncConfig.facilities.find((e) => e.facilityKey === safeKey);
+    const nextEntry: SyncFacilityEntry = {
+      facilityKey: safeKey,
+      label: f.facilityName || existing?.label || safeKey,
+      passcode: passcode || existing?.passcode || '',
+      ...(f.fileName ? { fileName: f.fileName } : {}),
+    };
+
+    if (!existing) {
       onUpdateSyncConfig({
         ...syncConfig,
-        facilities: [
-          ...syncConfig.facilities,
-          {
-            facilityKey: f.facilityKey,
-            label: f.facilityName || f.facilityKey,
-            passcode,
-          },
-        ],
+        facilities: [...syncConfig.facilities, nextEntry],
+      });
+    } else if (f.fileName && existing.fileName !== f.fileName) {
+      onUpdateSyncConfig({
+        ...syncConfig,
+        facilities: syncConfig.facilities.map((e) =>
+          e.facilityKey === safeKey ? { ...e, ...nextEntry } : e
+        ),
       });
     }
-    onSwitchFacility(f.facilityKey);
+    onSwitchFacility(safeKey);
   };
 
   const activeEntry = syncConfig.facilities.find((f) => f.facilityKey === syncConfig.activeFacilityKey);
@@ -470,23 +549,40 @@ export const GasSyncPanel: React.FC<Props> = ({
             </div>
 
             {/* Discovered Drive files */}
-            {driveFiles.length > 0 && (
+            {hasSearchedDrive && (
               <div className="p-3 rounded-xl bg-sky-50/70 border border-sky-200 space-y-2 text-xs">
                 <div className="font-bold text-sky-900">Google Drive上で見つかった拠点データ:</div>
-                <div className="flex flex-wrap gap-2">
-                  {driveFiles.map((df) => (
-                    <button
-                      type="button"
-                      key={df.facilityKey}
-                      onClick={() => handleImportDiscovered(df)}
-                      className="px-3 py-1.5 rounded-lg bg-white border border-sky-300 hover:bg-sky-100 text-sky-900 font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5"
-                    >
-                      <span>{df.facilityName || df.facilityKey}</span>
-                      <span className="text-[10px] text-slate-500">({df.facilityKey})</span>
-                      {df.hasPasscode && <Shield className="w-3 h-3 text-amber-600" />}
-                    </button>
-                  ))}
-                </div>
+                {driveFiles.length === 0 ? (
+                  <p className="text-slate-600 leading-relaxed">
+                    該当するファイルが見つかりませんでした。Drive上でファイル名を変更した場合、GAS側が旧バージョンのままだと{' '}
+                    <code className="bg-white px-1 rounded border">shift_*.json</code> 以外の名前やリネーム後のファイルを検出できません。
+                    STEP 1の最新GASコードへ更新（再デプロイ）するか、下の拠点一覧の「編集」ボタンからファイルIDを変更してください。
+                  </p>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {driveFiles.map((df, idx) => (
+                        <button
+                          type="button"
+                          key={`${df.fileName || df.facilityKey}-${idx}`}
+                          onClick={() => handleImportDiscovered(df)}
+                          className="px-3 py-1.5 rounded-lg bg-white border border-sky-300 hover:bg-sky-100 text-sky-900 font-bold text-[11px] transition cursor-pointer flex items-center gap-1.5"
+                        >
+                          <span>{df.facilityName || df.facilityKey}</span>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            ({df.fileName || df.facilityKey})
+                          </span>
+                          {df.hasPasscode && <Shield className="w-3 h-3 text-amber-600" />}
+                        </button>
+                      ))}
+                    </div>
+                    {driveFiles.some((df) => !df.fileName) && (
+                      <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 leading-relaxed">
+                        ※ Drive上で直接変更したファイル名が見つからない・古いID（kyoten_a等）のまま表示される場合は、STEP 1のGASコードを最新版に貼り替えて「新しいバージョン」でデプロイするか、下の各拠点の「編集」ボタンからファイル名（ID）を変更してください。
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             )}
 
@@ -596,75 +692,174 @@ export const GasSyncPanel: React.FC<Props> = ({
             <div className="divide-y divide-slate-200 border border-slate-200 rounded-xl overflow-hidden">
               {syncConfig.facilities.map((entry) => {
                 const isActive = entry.facilityKey === syncConfig.activeFacilityKey;
+                const isEditing = editingKey === entry.facilityKey;
+                const driveDisplayName = entry.fileName || `shift_${entry.facilityKey}.json`;
                 return (
                   <div
                     key={entry.facilityKey}
-                    className={`p-3 flex flex-wrap items-center justify-between gap-2 text-xs ${
+                    className={`p-3 space-y-2.5 text-xs ${
                       isActive ? 'bg-sky-50/70' : 'bg-white'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span
-                        className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold ${
-                          isActive ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {entry.facilityKey}
-                      </span>
-                      <span className="font-bold text-slate-900 truncate">{entry.label}</span>
-                      {entry.passcode && (
-                        <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-mono">
-                          合言葉あり
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold ${
+                            isActive ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {entry.facilityKey}
                         </span>
-                      )}
-                      {isActive && (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                          表示中
+                        <span className="font-bold text-slate-900 truncate">{entry.label}</span>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          ({driveDisplayName})
                         </span>
-                      )}
+                        {entry.passcode && (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-mono">
+                            合言葉あり
+                          </span>
+                        )}
+                        {isActive && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                            表示中
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {!isActive && (
+                          <button
+                            type="button"
+                            disabled={isSyncing}
+                            onClick={() => onSwitchFacility(entry.facilityKey)}
+                            className="px-2.5 py-1 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold text-[11px] transition cursor-pointer disabled:opacity-50"
+                          >
+                            切り替える
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            isEditing ? setEditingKey(null) : startEditFacility(entry)
+                          }
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-[11px] transition cursor-pointer"
+                          title="拠点名やファイル名（ID）・合言葉を変更します"
+                        >
+                          <Pencil className="w-3 h-3 text-slate-600" />
+                          <span>{isEditing ? '閉じる' : '名前・ID変更'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!syncConfig.gasUrl && !urlInput.trim()}
+                          onClick={() => handleCopyShareUrl(entry)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-sky-300 bg-white hover:bg-sky-50 text-sky-900 font-bold text-[11px] transition cursor-pointer disabled:opacity-40"
+                          title="この拠点専用の共有URLをコピーして担当者へ送れます"
+                        >
+                          {copiedShareKey === entry.facilityKey ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span>コピー済み</span>
+                            </>
+                          ) : (
+                            <>
+                              <Link2 className="w-3 h-3 text-sky-700" />
+                              <span>共有URLをコピー</span>
+                            </>
+                          )}
+                        </button>
+                        {syncConfig.facilities.length > 1 && !isActive && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFacility(entry)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                            title="リストから削除"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {!isActive && (
-                        <button
-                          type="button"
-                          disabled={isSyncing}
-                          onClick={() => onSwitchFacility(entry.facilityKey)}
-                          className="px-2.5 py-1 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold text-[11px] transition cursor-pointer disabled:opacity-50"
-                        >
-                          切り替える
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        disabled={!syncConfig.gasUrl && !urlInput.trim()}
-                        onClick={() => handleCopyShareUrl(entry)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-sky-300 bg-white hover:bg-sky-50 text-sky-900 font-bold text-[11px] transition cursor-pointer disabled:opacity-40"
-                        title="この拠点専用の共有URLをコピーして担当者へ送れます"
+                    {isEditing && (
+                      <form
+                        onSubmit={handleSaveEditFacility}
+                        className="p-3 rounded-xl bg-white border border-sky-200 space-y-2.5"
                       >
-                        {copiedShareKey === entry.facilityKey ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            <span>コピー済み</span>
-                          </>
-                        ) : (
-                          <>
-                            <Link2 className="w-3 h-3 text-sky-700" />
-                            <span>共有URLをコピー</span>
-                          </>
-                        )}
-                      </button>
-                      {syncConfig.facilities.length > 1 && !isActive && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFacility(entry.facilityKey)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-                          title="リストから削除"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                              拠点名
+                            </label>
+                            <input
+                              type="text"
+                              value={editLabel}
+                              onChange={(e) => setEditLabel(e.target.value)}
+                              className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                              ファイルID（英数字・日本語可）
+                            </label>
+                            <input
+                              type="text"
+                              value={editNewKey}
+                              onChange={(e) => setEditNewKey(e.target.value)}
+                              placeholder="例：honbu"
+                              className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                              合言葉（任意）
+                            </label>
+                            <input
+                              type="text"
+                              value={editPasscode}
+                              onChange={(e) => setEditPasscode(e.target.value)}
+                              className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600">
+                          <span>
+                            変更後のDriveファイル名:{' '}
+                            <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-900">
+                              shift_{sanitizeFacilityKey(editNewKey)}.json
+                            </code>
+                          </span>
+                          {sanitizeFacilityKey(editNewKey) !== entry.facilityKey && (
+                            <label className="inline-flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={deleteOldOnDrive}
+                                onChange={(e) => setDeleteOldOnDrive(e.target.checked)}
+                                className="rounded border-slate-300"
+                              />
+                              <span>古いファイル（{driveDisplayName}）をゴミ箱へ移動</span>
+                            </label>
+                          )}
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setEditingKey(null)}
+                            className="px-3 py-1 rounded-lg border border-slate-300 bg-white text-slate-600 font-bold text-[11px] cursor-pointer"
+                          >
+                            キャンセル
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={savingEdit || isSyncing}
+                            className="px-3.5 py-1 rounded-lg bg-sky-700 hover:bg-sky-800 text-white font-bold text-[11px] cursor-pointer disabled:opacity-50"
+                          >
+                            {savingEdit ? '変更中...' : '変更を保存'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 );
               })}

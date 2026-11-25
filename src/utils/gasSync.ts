@@ -4,6 +4,7 @@ export interface SyncFacilityEntry {
   facilityKey: string;
   label: string;
   passcode: string;
+  fileName?: string;
 }
 
 export interface SyncConfig {
@@ -21,6 +22,7 @@ export interface SyncFacilityMeta {
   localUpdatedAt: number;
   localDirty: boolean;
   hadOfflineEdits: boolean;
+  remoteMissing?: boolean;
 }
 
 export interface GasSyncSummary {
@@ -72,8 +74,25 @@ export const DEFAULT_SYNC_CONFIG: SyncConfig = {
 export function sanitizeFacilityKey(raw: string): string {
   const cleaned = String(raw || '')
     .trim()
-    .replace(/[^a-zA-Z0-9_-]/g, '_');
+    .replace(/[\\/:*?"<>|\s.&?#%]+/g, '_');
   return cleaned || 'kyoten_a';
+}
+
+export function dedupeSyncFacilities(list: SyncFacilityEntry[]): SyncFacilityEntry[] {
+  const seen = new Set<string>();
+  const result: SyncFacilityEntry[] = [];
+  for (const item of list) {
+    const key = sanitizeFacilityKey(item.facilityKey || 'kyoten_a');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push({
+      facilityKey: key,
+      label: String(item.label || key || '拠点'),
+      passcode: String(item.passcode || ''),
+      ...(item.fileName ? { fileName: String(item.fileName) } : {}),
+    });
+  }
+  return result;
 }
 
 export function loadSyncConfig(): SyncConfig {
@@ -82,20 +101,24 @@ export function loadSyncConfig(): SyncConfig {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
-        const facilities: SyncFacilityEntry[] = Array.isArray(parsed.facilities) && parsed.facilities.length > 0
-          ? parsed.facilities.map((f: any) => ({
-              facilityKey: sanitizeFacilityKey(f.facilityKey || 'kyoten_a'),
-              label: String(f.label || f.facilityKey || '拠点'),
-              passcode: String(f.passcode || ''),
-            }))
-          : DEFAULT_SYNC_CONFIG.facilities;
-        const activeKey = sanitizeFacilityKey(parsed.activeFacilityKey || facilities[0].facilityKey);
+        const rawFacilities: SyncFacilityEntry[] =
+          Array.isArray(parsed.facilities) && parsed.facilities.length > 0
+            ? parsed.facilities.map((f: any) => ({
+                facilityKey: sanitizeFacilityKey(f.facilityKey || 'kyoten_a'),
+                label: String(f.label || f.facilityKey || '拠点'),
+                passcode: String(f.passcode || ''),
+                ...(f.fileName ? { fileName: String(f.fileName) } : {}),
+              }))
+            : DEFAULT_SYNC_CONFIG.facilities;
+        const facilities = dedupeSyncFacilities(rawFacilities);
+        const finalFacilities = facilities.length > 0 ? facilities : [...DEFAULT_SYNC_CONFIG.facilities];
+        const activeKey = sanitizeFacilityKey(parsed.activeFacilityKey || finalFacilities[0].facilityKey);
         return {
           enabled: Boolean(parsed.enabled),
           gasUrl: String(parsed.gasUrl || '').trim(),
           role: parsed.role === 'branch' ? 'branch' : 'admin',
           activeFacilityKey: activeKey,
-          facilities,
+          facilities: finalFacilities,
           deviceLabel: String(parsed.deviceLabel || '端末'),
         };
       }
@@ -108,7 +131,13 @@ export function loadSyncConfig(): SyncConfig {
 
 export function saveSyncConfig(config: SyncConfig): void {
   try {
-    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(config));
+    const deduped = dedupeSyncFacilities(config.facilities || []);
+    const normalized: SyncConfig = {
+      ...config,
+      activeFacilityKey: sanitizeFacilityKey(config.activeFacilityKey),
+      facilities: deduped.length > 0 ? deduped : [...DEFAULT_SYNC_CONFIG.facilities],
+    };
+    localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(normalized));
   } catch (e) {
     console.warn('Failed to save sync config:', e);
   }
@@ -189,6 +218,7 @@ export function parseShareParamsFromUrl(): {
   facilityKey: string;
   passcode: string;
   label: string;
+  fileName?: string;
 } | null {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -202,11 +232,13 @@ export function parseShareParamsFromUrl(): {
 
     const code = params.get('code') || '';
     const label = params.get('name') || fac;
+    const fileName = params.get('fn')?.trim() || undefined;
     return {
       gasUrl: gas,
       facilityKey: sanitizeFacilityKey(fac),
       passcode: code,
       label,
+      ...(fileName ? { fileName } : {}),
     };
   } catch {
     return null;
@@ -226,6 +258,9 @@ export function buildBranchShareUrl(
   }
   if (entry.label) {
     params.set('name', entry.label);
+  }
+  if (entry.fileName) {
+    params.set('fn', entry.fileName);
   }
   return `${baseUrl}?${params.toString()}`;
 }
@@ -275,7 +310,8 @@ export async function gasPing(gasUrl: string): Promise<{
 export async function gasFetchMeta(
   gasUrl: string,
   facilityKey: string,
-  passcode: string
+  passcode: string,
+  fileName?: string
 ): Promise<{
   ok: boolean;
   exists?: boolean;
@@ -291,13 +327,15 @@ export async function gasFetchMeta(
     action: 'meta',
     facilityKey: sanitizeFacilityKey(facilityKey),
     passcode,
+    ...(fileName ? { fileName } : {}),
   });
 }
 
 export async function gasLoadFacility(
   gasUrl: string,
   facilityKey: string,
-  passcode: string
+  passcode: string,
+  fileName?: string
 ): Promise<{
   ok: boolean;
   exists?: boolean;
@@ -309,6 +347,7 @@ export async function gasLoadFacility(
     action: 'load',
     facilityKey: sanitizeFacilityKey(facilityKey),
     passcode,
+    ...(fileName ? { fileName } : {}),
   });
 }
 
@@ -321,11 +360,13 @@ export async function gasSaveFacility(
     expectedRevision?: number;
     force?: boolean;
     updatedBy?: string;
+    fileName?: string;
   }
 ): Promise<{
   ok: boolean;
   revision?: number;
   updatedAt?: number;
+  fileName?: string;
   record?: GasSyncRecord;
   error?: string;
   message?: string;
@@ -340,22 +381,76 @@ export async function gasSaveFacility(
     facilityName: state.facility?.name || facilityKey,
     summary: summarizeAppState(state),
     state,
+    ...(options?.fileName ? { fileName: options.fileName } : {}),
   });
+}
+
+export async function gasDeleteFacility(
+  gasUrl: string,
+  facilityKey: string,
+  passcode: string,
+  fileName?: string
+): Promise<{
+  ok: boolean;
+  deleted?: boolean;
+  error?: string;
+  message?: string;
+}> {
+  return callGasEndpoint(gasUrl, {
+    action: 'delete',
+    facilityKey: sanitizeFacilityKey(facilityKey),
+    passcode,
+    ...(fileName ? { fileName } : {}),
+  });
+}
+
+export interface DiscoveredDriveFacility {
+  facilityKey: string;
+  fileName?: string;
+  facilityName: string;
+  revision: number;
+  updatedAt: number;
+  hasPasscode: boolean;
 }
 
 export async function gasListFacilities(gasUrl: string): Promise<{
   ok: boolean;
-  facilities?: Array<{
-    facilityKey: string;
-    facilityName: string;
-    revision: number;
-    updatedAt: number;
-    hasPasscode: boolean;
-  }>;
+  facilities?: DiscoveredDriveFacility[];
   error?: string;
   message?: string;
 }> {
-  return callGasEndpoint(gasUrl, { action: 'list' });
+  const res = await callGasEndpoint<{
+    ok: boolean;
+    facilities?: DiscoveredDriveFacility[];
+    error?: string;
+    message?: string;
+  }>(gasUrl, { action: 'list' });
+
+  if (res.ok && Array.isArray(res.facilities)) {
+    const byKey = new Map<string, DiscoveredDriveFacility>();
+    for (const item of res.facilities) {
+      const key = sanitizeFacilityKey(item.facilityKey || 'kyoten_a');
+      const normalized: DiscoveredDriveFacility = {
+        ...item,
+        facilityKey: key,
+      };
+      const dedupeKey = item.fileName ? `fn:${item.fileName}` : `key:${key}`;
+      const prev = byKey.get(dedupeKey);
+      if (
+        !prev ||
+        (normalized.updatedAt || 0) > (prev.updatedAt || 0) ||
+        ((normalized.updatedAt || 0) === (prev.updatedAt || 0) &&
+          (normalized.revision || 0) > (prev.revision || 0))
+      ) {
+        byKey.set(dedupeKey, normalized);
+      }
+    }
+    return {
+      ...res,
+      facilities: Array.from(byKey.values()),
+    };
+  }
+  return res;
 }
 
 export const GAS_TEMPLATE_CODE = `// ==========================================================
@@ -379,8 +474,18 @@ function getOrCreateFolder_() {
 }
 
 function getSafeFileName_(facilityKey) {
-  var safe = String(facilityKey || 'default').replace(/[^a-zA-Z0-9_-]/g, '_');
+  var safe = String(facilityKey || 'default').replace(/[\\\\/:*?"<>|\\s]+/g, '_');
   return 'shift_' + safe + '.json';
+}
+
+function deriveKeyFromFileName_(name, fallbackKey) {
+  if (!name) return fallbackKey || 'kyoten_a';
+  var trimmed = String(name);
+  if (trimmed.indexOf('shift_') === 0) {
+    trimmed = trimmed.slice(6);
+  }
+  trimmed = trimmed.replace(/\\.json$/i, '');
+  return trimmed || fallbackKey || 'kyoten_a';
 }
 
 function findFile_(folder, fileName) {
@@ -391,9 +496,42 @@ function findFile_(folder, fileName) {
   return null;
 }
 
+function findShiftFile_(folder, facilityKey, customFileName) {
+  if (customFileName) {
+    var byCustom = findFile_(folder, customFileName);
+    if (byCustom) return byCustom;
+  }
+  var safeName = getSafeFileName_(facilityKey);
+  var bySafe = findFile_(folder, safeName);
+  if (bySafe) return bySafe;
+
+  var plainJson = String(facilityKey || '') + '.json';
+  var byPlain = findFile_(folder, plainJson);
+  if (byPlain) return byPlain;
+
+  var byRaw = findFile_(folder, String(facilityKey || ''));
+  if (byRaw) return byRaw;
+
+  return null;
+}
+
 function readRecord_(file) {
   var raw = file.getBlob().getDataAsString('UTF-8');
   return JSON.parse(raw);
+}
+
+function isCandidateShiftFile_(file) {
+  try {
+    if (file.getSize() > 5 * 1024 * 1024) return false;
+    var name = String(file.getName() || '').toLowerCase();
+    var mime = String(file.getMimeType() || '');
+    if (name.slice(-5) === '.json' || name.slice(-4) === '.txt') return true;
+    if (mime === 'text/plain' || mime === 'application/json' || mime === 'application/octet-stream') return true;
+    if (name.indexOf('.') === -1) return true;
+    return false;
+  } catch (e) {
+    return false;
+  }
 }
 
 function jsonOut_(obj) {
@@ -427,37 +565,53 @@ function doPost(e) {
     }
 
     if (action === 'list') {
-      var list = [];
+      var byKey = {};
       var files = folder.getFiles();
       while (files.hasNext()) {
         var f = files.next();
+        if (!isCandidateShiftFile_(f)) continue;
         var name = f.getName();
-        if (name.indexOf('shift_') === 0 && name.slice(-5) === '.json') {
-          try {
-            var rec = readRecord_(f);
-            list.push({
-              facilityKey: rec.facilityKey || name.replace(/^shift_|\\.json$/g, ''),
-              facilityName: rec.facilityName || '',
-              revision: rec.revision || 0,
-              updatedAt: rec.updatedAt || 0,
-              hasPasscode: Boolean(rec.passcode && String(rec.passcode).length > 0)
-            });
-          } catch (err) {}
+        try {
+          var raw = f.getBlob().getDataAsString('UTF-8').trim();
+          if (!raw || raw.charAt(0) !== '{') continue;
+          var rec = JSON.parse(raw);
+          if (!rec || !rec.state || !rec.state.facility) continue;
+          var key = deriveKeyFromFileName_(name, rec.facilityKey);
+          var candidate = {
+            facilityKey: key,
+            fileName: name,
+            facilityName: rec.facilityName || (rec.state && rec.state.facility && rec.state.facility.name) || key,
+            revision: rec.revision || 0,
+            updatedAt: rec.updatedAt || (f.getLastUpdated ? f.getLastUpdated().getTime() : 0) || 0,
+            hasPasscode: Boolean(rec.passcode && String(rec.passcode).length > 0)
+          };
+          var dedupeKey = name || key;
+          var prev = byKey[dedupeKey];
+          if (!prev || candidate.updatedAt > prev.updatedAt || (candidate.updatedAt === prev.updatedAt && candidate.revision > prev.revision)) {
+            byKey[dedupeKey] = candidate;
+          }
+        } catch (err) {}
+      }
+      var list = [];
+      for (var k in byKey) {
+        if (Object.prototype.hasOwnProperty.call(byKey, k)) {
+          list.push(byKey[k]);
         }
       }
       return jsonOut_({ ok: true, facilities: list });
     }
 
     var facilityKey = body.facilityKey;
+    var customFileName = body.fileName || '';
     var passcode = String(body.passcode || '');
     if (!facilityKey) {
       return jsonOut_({ ok: false, error: 'MISSING_KEY', message: '拠点キーが指定されていません' });
     }
 
-    var fileName = getSafeFileName_(facilityKey);
+    var fileName = customFileName || getSafeFileName_(facilityKey);
 
     if (action === 'meta' || action === 'load') {
-      var file = findFile_(folder, fileName);
+      var file = findShiftFile_(folder, facilityKey, customFileName);
       if (!file) {
         return jsonOut_({ ok: true, exists: false, revision: 0, updatedAt: 0 });
       }
@@ -469,6 +623,7 @@ function doPost(e) {
         return jsonOut_({
           ok: true,
           exists: true,
+          fileName: file.getName(),
           revision: rec.revision || 1,
           updatedAt: rec.updatedAt || 0,
           updatedBy: rec.updatedBy || '',
@@ -480,7 +635,7 @@ function doPost(e) {
         ok: true,
         exists: true,
         record: {
-          facilityKey: rec.facilityKey,
+          facilityKey: facilityKey,
           facilityName: rec.facilityName,
           revision: rec.revision || 1,
           updatedAt: rec.updatedAt || 0,
@@ -491,9 +646,23 @@ function doPost(e) {
       });
     }
 
+    if (action === 'delete') {
+      lock.waitLock(15000);
+      var delFile = findShiftFile_(folder, facilityKey, customFileName);
+      if (!delFile) {
+        return jsonOut_({ ok: true, deleted: false });
+      }
+      var delRec = readRecord_(delFile);
+      if (delRec.passcode && String(delRec.passcode) !== '' && String(delRec.passcode) !== passcode) {
+        return jsonOut_({ ok: false, error: 'INVALID_PASSCODE', message: '合言葉（パスコード）が一致しません' });
+      }
+      delFile.setTrashed(true);
+      return jsonOut_({ ok: true, deleted: true });
+    }
+
     if (action === 'save') {
       lock.waitLock(15000);
-      var targetFile = findFile_(folder, fileName);
+      var targetFile = findShiftFile_(folder, facilityKey, customFileName);
       var existing = targetFile ? readRecord_(targetFile) : null;
 
       if (existing && existing.passcode && String(existing.passcode) !== '' && String(existing.passcode) !== passcode) {
@@ -510,7 +679,7 @@ function doPost(e) {
           error: 'CONFLICT',
           message: '他の端末で新しいデータが保存されています',
           record: {
-            facilityKey: existing.facilityKey,
+            facilityKey: facilityKey,
             facilityName: existing.facilityName,
             revision: existing.revision || 1,
             updatedAt: existing.updatedAt || 0,
@@ -535,6 +704,7 @@ function doPost(e) {
       };
 
       var serialized = JSON.stringify(newRecord);
+      var savedName = targetFile ? targetFile.getName() : fileName;
       if (targetFile) {
         targetFile.setContent(serialized);
       } else {
@@ -543,6 +713,7 @@ function doPost(e) {
 
       return jsonOut_({
         ok: true,
+        fileName: savedName,
         revision: nextRev,
         updatedAt: now
       });

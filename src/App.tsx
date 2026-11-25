@@ -15,6 +15,7 @@ import {
   GasSyncRecord,
   loadSyncConfig,
   saveSyncConfig,
+  dedupeSyncFacilities,
   getFacilitySyncMeta,
   saveFacilitySyncMeta,
   loadCachedFacilityState,
@@ -24,6 +25,8 @@ import {
   gasFetchMeta,
   gasLoadFacility,
   gasSaveFacility,
+  gasDeleteFacility,
+  sanitizeFacilityKey,
 } from './utils/gasSync';
 import mascotLogo from './assets/mascot.png';
 
@@ -103,7 +106,12 @@ function initSyncConfigWithShareUrl(): SyncConfig {
   const updatedFacilities: SyncFacilityEntry[] = matched
     ? existing.facilities.map((f) =>
         f.facilityKey === share.facilityKey
-          ? { ...f, label: share.label || f.label, passcode: share.passcode }
+          ? {
+              ...f,
+              label: share.label || f.label,
+              passcode: share.passcode,
+              ...(share.fileName ? { fileName: share.fileName } : f.fileName ? { fileName: f.fileName } : {}),
+            }
           : f
       )
     : [
@@ -111,6 +119,7 @@ function initSyncConfigWithShareUrl(): SyncConfig {
           facilityKey: share.facilityKey,
           label: share.label,
           passcode: share.passcode,
+          ...(share.fileName ? { fileName: share.fileName } : {}),
         },
       ];
 
@@ -181,6 +190,10 @@ export default function App() {
     return cfg.facilities.find((f) => f.facilityKey === key)?.label || stateRef.current.facility?.name || key;
   }, []);
 
+  const getActiveFileName = useCallback((cfg: SyncConfig, key: string) => {
+    return cfg.facilities.find((f) => f.facilityKey === key)?.fileName;
+  }, []);
+
   const persistLocalMirror = useCallback((targetState: AppState, cfg: SyncConfig) => {
     try {
       if (cfg.enabled) {
@@ -227,10 +240,16 @@ export default function App() {
 
   // Push local state to Google Drive via GAS
   const pushFacilityState = useCallback(
-    async (facilityKey: string, targetState: AppState, force = false): Promise<boolean> => {
-      const cfg = syncConfigRef.current;
+    async (
+      facilityKey: string,
+      targetState: AppState,
+      force = false,
+      cfgOverride?: SyncConfig
+    ): Promise<boolean> => {
+      const cfg = cfgOverride || syncConfigRef.current;
       if (!cfg.enabled || !cfg.gasUrl || !navigator.onLine) return false;
       const passcode = getActivePasscode(cfg, facilityKey);
+      const fileName = getActiveFileName(cfg, facilityKey);
       const curMeta = getFacilitySyncMeta(facilityKey);
 
       setIsSyncing(true);
@@ -240,6 +259,7 @@ export default function App() {
           expectedRevision: curMeta.lastSyncedRevision,
           force,
           updatedBy: cfg.deviceLabel || (cfg.role === 'admin' ? '本部' : '拠点'),
+          fileName,
         });
 
         if (res.ok) {
@@ -249,6 +269,7 @@ export default function App() {
             localUpdatedAt: curMeta.localUpdatedAt || Date.now(),
             localDirty: false,
             hadOfflineEdits: false,
+            remoteMissing: false,
           };
           saveFacilitySyncMeta(facilityKey, nextMeta);
           if (facilityKey === syncConfigRef.current.activeFacilityKey) {
@@ -287,7 +308,7 @@ export default function App() {
         setIsSyncing(false);
       }
     },
-    [getActiveLabel, getActivePasscode]
+    [getActiveFileName, getActiveLabel, getActivePasscode]
   );
 
   // Check remote Drive metadata and either auto-pull, auto-push, or ask user via modal
@@ -298,6 +319,7 @@ export default function App() {
       if (conflictRef.current) return;
 
       const passcode = getActivePasscode(cfg, facilityKey);
+      const fileName = getActiveFileName(cfg, facilityKey);
       const curMeta = getFacilitySyncMeta(facilityKey);
       lastCheckAtRef.current = Date.now();
 
@@ -306,7 +328,7 @@ export default function App() {
       try {
         // If edits were made offline, always fetch remote and let user choose when remote exists
         if (curMeta.hadOfflineEdits) {
-          const loadRes = await gasLoadFacility(cfg.gasUrl, facilityKey, passcode);
+          const loadRes = await gasLoadFacility(cfg.gasUrl, facilityKey, passcode, fileName);
           if (!loadRes.ok) {
             setSyncError(loadRes.message || '同期確認に失敗しました');
             return;
@@ -326,31 +348,50 @@ export default function App() {
               remoteRecord: loadRes.record,
             });
           } else {
-            const localData =
-              facilityKey === cfg.activeFacilityKey
-                ? stateRef.current
-                : loadCachedFacilityState(facilityKey) || stateRef.current;
-            await pushFacilityState(facilityKey, localData, true);
+            // Never resurrect a deleted/missing file automatically in background check
+            const missingMeta: SyncFacilityMeta = {
+              ...curMeta,
+              lastSyncedRevision: 0,
+              hadOfflineEdits: false,
+              localDirty: true,
+              remoteMissing: true,
+            };
+            saveFacilitySyncMeta(facilityKey, missingMeta);
+            if (facilityKey === cfg.activeFacilityKey) {
+              setSyncMeta(missingMeta);
+            }
+            setSyncError(
+              'Drive上にこの拠点のファイルが見つかりません。新規アップロードする場合は「Driveへ今すぐ保存」を押してください。'
+            );
           }
           return;
         }
 
-        const metaRes = await gasFetchMeta(cfg.gasUrl, facilityKey, passcode);
+        const metaRes = await gasFetchMeta(cfg.gasUrl, facilityKey, passcode, fileName);
         if (!metaRes.ok) {
           setSyncError(metaRes.message || '共有メタデータの確認に失敗しました');
           return;
         }
 
         if (!metaRes.exists) {
-          if (cfg.role === 'admin') {
-            const localData =
-              facilityKey === cfg.activeFacilityKey
-                ? stateRef.current
-                : loadCachedFacilityState(facilityKey);
-            if (localData) {
-              await pushFacilityState(facilityKey, localData, true);
+          // Do NOT silently auto-create missing files on Drive (prevents ghost re-creation after delete/rename)
+          if (curMeta.lastSyncedRevision > 0) {
+            const missingMeta: SyncFacilityMeta = {
+              ...curMeta,
+              lastSyncedRevision: 0,
+              localDirty: true,
+              remoteMissing: true,
+            };
+            saveFacilitySyncMeta(facilityKey, missingMeta);
+            if (facilityKey === cfg.activeFacilityKey) {
+              setSyncMeta(missingMeta);
             }
-          } else {
+            setSyncError(
+              cfg.role === 'admin'
+                ? `Drive上にファイル（${fileName || `shift_${facilityKey}.json`}）が見つかりません（削除・名前変更された可能性があります）。再保存するには「Driveへ今すぐ保存」、変更後のファイルを使うには「Drive内の拠点を検索」を押してください。`
+                : '共有元（拠点A）のDrive上にこの拠点のデータが見つかりません。'
+            );
+          } else if (cfg.role === 'branch') {
             setSyncError('共有元（拠点A）のDrive上にこの拠点のデータがまだ作成されていません。');
           }
           return;
@@ -358,7 +399,7 @@ export default function App() {
 
         const remoteRev = metaRes.revision || 1;
         if (remoteRev > curMeta.lastSyncedRevision) {
-          const loadRes = await gasLoadFacility(cfg.gasUrl, facilityKey, passcode);
+          const loadRes = await gasLoadFacility(cfg.gasUrl, facilityKey, passcode, fileName);
           if (!loadRes.ok || !loadRes.record) {
             setSyncError(loadRes.message || '共有データの読み込みに失敗しました');
             return;
@@ -385,7 +426,7 @@ export default function App() {
             facilityKey === cfg.activeFacilityKey
               ? stateRef.current
               : loadCachedFacilityState(facilityKey) || stateRef.current;
-          await pushFacilityState(facilityKey, localData, false);
+          await pushFacilityState(facilityKey, localData, false, cfg);
         }
       } catch (err: any) {
         setSyncError(err.message || 'Driveとの同期確認に失敗しました');
@@ -393,7 +434,7 @@ export default function App() {
         setIsSyncing(false);
       }
     },
-    [applyRemoteRecord, getActiveLabel, getActivePasscode, pushFacilityState]
+    [applyRemoteRecord, getActiveFileName, getActiveLabel, getActivePasscode, pushFacilityState]
   );
 
   // Sync on startup, when syncConfig changes, and when recovering from offline
@@ -498,7 +539,14 @@ export default function App() {
         saveFacilitySyncMeta(cfg.activeFacilityKey, nextMeta);
         setSyncMeta(nextMeta);
 
-        if (cfg.gasUrl && !offlineNow && !nextMeta.hadOfflineEdits && !conflictRef.current) {
+        if (
+          cfg.gasUrl &&
+          !offlineNow &&
+          !nextMeta.hadOfflineEdits &&
+          !nextMeta.remoteMissing &&
+          nextMeta.lastSyncedRevision > 0 &&
+          !conflictRef.current
+        ) {
           if (pushTimerRef.current) {
             window.clearTimeout(pushTimerRef.current);
           }
@@ -514,12 +562,16 @@ export default function App() {
   };
 
   const handleUpdateSyncConfig = (next: SyncConfig) => {
-    if (next.enabled) {
-      saveCachedFacilityState(next.activeFacilityKey, stateRef.current);
+    const deduped: SyncConfig = {
+      ...next,
+      facilities: dedupeSyncFacilities(next.facilities || []),
+    };
+    if (deduped.enabled) {
+      saveCachedFacilityState(deduped.activeFacilityKey, stateRef.current);
     }
-    saveSyncConfig(next);
-    setSyncConfig(next);
-    setSyncMeta(getFacilitySyncMeta(next.activeFacilityKey));
+    saveSyncConfig(deduped);
+    setSyncConfig(deduped);
+    setSyncMeta(getFacilitySyncMeta(deduped.activeFacilityKey));
   };
 
   const handleManualPush = async (force = false) => {
@@ -531,11 +583,12 @@ export default function App() {
     const cfg = syncConfigRef.current;
     if (!cfg.enabled || !cfg.gasUrl || !navigator.onLine) return;
     const passcode = getActivePasscode(cfg, cfg.activeFacilityKey);
+    const fileName = getActiveFileName(cfg, cfg.activeFacilityKey);
     const curMeta = getFacilitySyncMeta(cfg.activeFacilityKey);
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const res = await gasLoadFacility(cfg.gasUrl, cfg.activeFacilityKey, passcode);
+      const res = await gasLoadFacility(cfg.gasUrl, cfg.activeFacilityKey, passcode, fileName);
       if (!res.ok) {
         setSyncError(res.message || 'Driveからの読み込みに失敗しました');
         return;
@@ -615,11 +668,15 @@ export default function App() {
     const curCfg = syncConfigRef.current;
     saveCachedFacilityState(curCfg.activeFacilityKey, stateRef.current);
 
+    const updatedFacilities = curCfg.facilities.some((f) => f.facilityKey === entry.facilityKey)
+      ? curCfg.facilities.map((f) => (f.facilityKey === entry.facilityKey ? entry : f))
+      : [...curCfg.facilities, entry];
+
     const nextCfg: SyncConfig = {
       ...curCfg,
       enabled: Boolean(curCfg.gasUrl) ? true : curCfg.enabled,
       activeFacilityKey: entry.facilityKey,
-      facilities: [...curCfg.facilities, entry],
+      facilities: dedupeSyncFacilities(updatedFacilities),
     };
     saveSyncConfig(nextCfg);
     setSyncConfig(nextCfg);
@@ -628,11 +685,12 @@ export default function App() {
     if (templateMode === 'from_drive' && nextCfg.gasUrl && navigator.onLine) {
       setIsSyncing(true);
       try {
-        const res = await gasLoadFacility(nextCfg.gasUrl, entry.facilityKey, entry.passcode);
+        const res = await gasLoadFacility(nextCfg.gasUrl, entry.facilityKey, entry.passcode, entry.fileName);
         if (res.ok && res.exists && res.record) {
           applyRemoteRecord(entry.facilityKey, res.record);
           return;
         }
+        setSyncError(res.message || `Drive上に「${entry.fileName || `shift_${entry.facilityKey}.json`}」が見つかりませんでした。`);
       } catch (err: any) {
         setSyncError(err.message || 'Drive読込エラー');
       } finally {
@@ -692,12 +750,101 @@ export default function App() {
       localUpdatedAt: Date.now(),
       localDirty: true,
       hadOfflineEdits: false,
+      remoteMissing: false,
     };
     saveFacilitySyncMeta(entry.facilityKey, freshMeta);
     setSyncMeta(freshMeta);
 
+    if (templateMode !== 'from_drive' && nextCfg.enabled && nextCfg.gasUrl && navigator.onLine) {
+      await pushFacilityState(entry.facilityKey, nextState, true, nextCfg);
+    }
+  };
+
+  const handleRenameFacility = async (
+    oldKey: string,
+    updatedEntry: SyncFacilityEntry,
+    options?: { deleteOldOnDrive?: boolean }
+  ) => {
+    if (pushTimerRef.current) {
+      window.clearTimeout(pushTimerRef.current);
+      pushTimerRef.current = null;
+    }
+
+    const curCfg = syncConfigRef.current;
+    const oldEntry = curCfg.facilities.find((f) => f.facilityKey === oldKey);
+    const safeNewKey = sanitizeFacilityKey(updatedEntry.facilityKey);
+    const cleanEntry: SyncFacilityEntry = {
+      facilityKey: safeNewKey,
+      label: updatedEntry.label.trim() || safeNewKey,
+      passcode: updatedEntry.passcode,
+      ...(safeNewKey === oldKey && updatedEntry.fileName ? { fileName: updatedEntry.fileName } : {}),
+    };
+
+    const isRenamingActive = curCfg.activeFacilityKey === oldKey;
+    const targetState = isRenamingActive
+      ? stateRef.current
+      : loadCachedFacilityState(oldKey) || stateRef.current;
+
+    // Update facility name inside state if label changed
+    const nextState: AppState = {
+      ...targetState,
+      facility: {
+        ...targetState.facility,
+        name: cleanEntry.label,
+      },
+      facilities: Array.isArray(targetState.facilities)
+        ? targetState.facilities.map((fac, i) => (i === 0 ? { ...fac, name: cleanEntry.label } : fac))
+        : targetState.facilities,
+    };
+
+    saveCachedFacilityState(safeNewKey, nextState);
+    if (isRenamingActive) {
+      setState(nextState);
+    }
+
+    const oldMeta = getFacilitySyncMeta(oldKey);
+    const nextMeta: SyncFacilityMeta =
+      safeNewKey !== oldKey
+        ? {
+            lastSyncedRevision: 0,
+            lastSyncedAt: 0,
+            localUpdatedAt: Date.now(),
+            localDirty: true,
+            hadOfflineEdits: false,
+            remoteMissing: false,
+          }
+        : oldMeta;
+    saveFacilitySyncMeta(safeNewKey, nextMeta);
+    if (isRenamingActive) {
+      setSyncMeta(nextMeta);
+    }
+
+    const updatedList = curCfg.facilities.map((f) =>
+      f.facilityKey === oldKey ? cleanEntry : f
+    );
+    const nextCfg: SyncConfig = {
+      ...curCfg,
+      activeFacilityKey: isRenamingActive ? safeNewKey : curCfg.activeFacilityKey,
+      facilities: dedupeSyncFacilities(updatedList),
+    };
+    saveSyncConfig(nextCfg);
+    setSyncConfig(nextCfg);
+    setSyncError(null);
+
     if (nextCfg.enabled && nextCfg.gasUrl && navigator.onLine) {
-      await pushFacilityState(entry.facilityKey, nextState, true);
+      const pushed = await pushFacilityState(safeNewKey, nextState, true, nextCfg);
+      if (pushed && safeNewKey !== oldKey && options?.deleteOldOnDrive && oldEntry) {
+        try {
+          await gasDeleteFacility(
+            nextCfg.gasUrl,
+            oldKey,
+            oldEntry.passcode || '',
+            oldEntry.fileName
+          );
+        } catch {
+          // ignore if deployed GAS does not yet support delete action
+        }
+      }
     }
   };
 
@@ -908,6 +1055,7 @@ export default function App() {
             onManualPull={handleManualPull}
             onSwitchFacility={handleSwitchFacility}
             onCreateFacility={handleCreateFacility}
+            onRenameFacility={handleRenameFacility}
           />
         )}
       </main>
@@ -947,6 +1095,7 @@ export default function App() {
                 setShowSyncModal(false);
               }}
               onCreateFacility={handleCreateFacility}
+              onRenameFacility={handleRenameFacility}
             />
           </div>
         </div>
