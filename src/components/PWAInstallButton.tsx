@@ -203,7 +203,7 @@ export const PWAInstallButton: React.FC = () => {
                         ブラウザのアドレスバー（URL入力欄）の<strong>右端</strong>に表示される「<strong>インストール</strong>」アイコン（🖥️ または ⬇️）をクリックします。
                       </li>
                       <li>
-                        またはブラウザ右上のメニュー「<strong>︙</strong>」→「<strong>『介護シフトAI』をインストール</strong>」を選択します。
+                        またはブラウザ右上のメニュー「<strong>︙</strong>」→「<strong>『介護シフト自動作成』をインストール</strong>」を選択します。
                       </li>
                       <li>
                         確認ダイアログで「<strong>インストール</strong>」をクリックすると、デスクトップにアプリアイコンが生成され、独立した専用ウィンドウで起動します。

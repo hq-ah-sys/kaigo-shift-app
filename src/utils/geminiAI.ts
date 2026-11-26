@@ -640,6 +640,6 @@ export async function runAIComplianceAudit(state: AppState): Promise<string> {
 export async function testAIServerConnection(): Promise<{ success: boolean; message: string }> {
   return {
     success: true,
-    message: '✨ クライアントサイド・AIエンジン（無料プラン対応モード）は正常に動作しています。',
+    message: '✨ クライアントサイド自動計算・ルール解析エンジン（完全無料・サーバーレス）は正常に動作しています。',
   };
 }

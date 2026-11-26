@@ -15,8 +15,8 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
-          name: '介護シフトAI自動作成アプリ',
-          short_name: '介護シフトAI',
+          name: '介護シフト自動作成アプリ',
+          short_name: '介護シフト自動作成',
           description: '労働基準法・36協定・人員配置基準チェック付きの介護シフト自動作成PWA',
           theme_color: '#0d9488',
           background_color: '#f8fafc',

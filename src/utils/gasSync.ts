@@ -454,7 +454,7 @@ export async function gasListFacilities(gasUrl: string): Promise<{
 }
 
 export const GAS_TEMPLATE_CODE = `// ==========================================================
-// 介護シフトAI自動作成アプリ - Google Drive 共有サーバー (GAS)
+// 介護シフト自動作成アプリ - Google Drive 共有サーバー (GAS)
 // 完全無料・Google Cloud課金ゼロ / 拠点間自動同期用スクリプト
 // ==========================================================
 

@@ -879,7 +879,7 @@ export default function App() {
     { id: 'maturity', label: 'スキル', icon: Award },
     { id: 'compat', label: '相性', icon: HeartHandshake },
     { id: 'preference', label: '希望入力', icon: CalendarDays },
-    { id: 'generate', label: 'AI生成', icon: Sparkles, highlight: true },
+    { id: 'generate', label: '自動作成', icon: Sparkles, highlight: true },
     { id: 'calendar', label: 'シフト表', icon: CalendarRange },
     { id: 'balance', label: 'バランス', icon: TrendingUp },
     { id: 'check', label: 'コンプライアンス', icon: ShieldCheck },
@@ -902,7 +902,7 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
-                  介護シフトAI自動作成アプリ
+                  介護シフト自動作成アプリ
                 </h1>
                 {syncConfig.enabled && syncConfig.role === 'admin' && syncConfig.facilities.length > 1 ? (
                   <select
@@ -1063,7 +1063,7 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-sky-300/70 bg-sky-100/60 py-4 text-center text-xs text-slate-600">
         <div className="max-w-[1800px] mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
-          <span>介護シフトAI自動作成アプリ {APP_VERSION} &copy; 2026 — PWA Offline Supported</span>
+          <span>介護シフト自動作成アプリ {APP_VERSION} &copy; 2026 — PWA Offline Supported</span>
           <span>労働基準法（34条休憩・36条協定）/ 介護保険法人員配置基準対応</span>
         </div>
       </footer>

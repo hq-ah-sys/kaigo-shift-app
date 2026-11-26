@@ -34,7 +34,7 @@ export const MaturityTab: React.FC<Props> = ({ state, onUpdateState }) => {
           <div>
             <h2 className="text-lg font-bold text-gray-900">スキル・成熟度設定</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              各職員のスキルレベル（1〜5）を設定します。AIシフト生成時に1日あたりのベテラン配置や新人偏りの防止に活用されます。
+              各職員のスキルレベル（1〜5）を設定します。シフト自動作成時に1日あたりのベテラン配置や新人偏りの防止に活用されます。
             </p>
           </div>
         </div>

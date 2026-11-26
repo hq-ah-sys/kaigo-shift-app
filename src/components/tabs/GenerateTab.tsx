@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppState, ParsedRule } from '../../types';
 import { generateShifts } from '../../utils/shiftEngine';
 import { interpretInstructionsWithAI } from '../../utils/geminiAI';
-import { Sparkles, Bot, Play, CheckCircle2, RefreshCw, X } from 'lucide-react';
+import { Sparkles, ListChecks, Play, CheckCircle2, RefreshCw, X } from 'lucide-react';
 
 interface Props {
   state: AppState;
@@ -80,7 +80,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       }));
       setInterpretResultText(res.rawAnalysis);
     } catch (err: any) {
-      setInterpretResultText(`⚠️ AI解析エラー: ${err.message}`);
+      setInterpretResultText(`⚠️ ルール解析エラー: ${err.message}`);
     } finally {
       setIsInterpreting(false);
     }
@@ -124,13 +124,13 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
 
     setIsGenerating(true);
     setProgressPercent(10);
-    setProgressStepMsg('希望休・有休・AI個別条件を適用中...');
+    setProgressStepMsg('希望休・有休・個別条件を適用中...');
 
     const lockedCount = state.lockedStaff.length;
 
     const steps: Array<[number, string, number]> = [
       [300, lockedCount > 0 ? `🔒 ${lockedCount}名の固定シフトを保護中...` : '勤務パターン初期化中...', 30],
-      [700, activeParsedRules.length > 0 ? `✨ ${activeParsedRules.length}件のAI指示ルール（曜日・夜勤上限・所定時間保証等）を反映中...` : '相性ルール・禁止ペア制約を適用中...', 50],
+      [700, activeParsedRules.length > 0 ? `✨ ${activeParsedRules.length}件の個別条件ルール（曜日・夜勤上限・所定時間保証等）を反映中...` : '相性ルール・禁止ペア制約を適用中...', 50],
       [1100, '24時間体制・夜勤・明けの自動割り当て中...', 70],
       [1500, '人員配置基準・常勤換算・所定労働時間を最適化中...', 85],
       [1800, '労働基準法・36協定・5連勤制限の最終適合チェック...', 95],
@@ -157,7 +157,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       }));
 
       setProgressPercent(100);
-      setProgressStepMsg('✅ AIシフト自動生成が完了しました！');
+      setProgressStepMsg('✅ シフト自動作成が完了しました！');
 
       setTimeout(() => {
         setIsGenerating(false);
@@ -182,13 +182,13 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white border border-white/30 text-xs font-bold mb-4 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-            <span>AI Caregiving Shift Engine Pro</span>
+            <span>Caregiving Shift Auto Engine</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
-            法令遵守・労働時間・希望を
+            法令・労働時間・希望を
             <br />
-            AIが瞬時に最適化して自動生成
+            瞬時に最適化して自動作成
           </h2>
 
           <p className="mt-3 text-sm text-teal-50 leading-relaxed font-normal">
@@ -215,11 +215,11 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
       {/* Natural Language Custom Instructions */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6">
         <div className="flex items-center gap-2 mb-2">
-          <Bot className="w-5 h-5 text-teal-600" />
-          <h3 className="font-bold text-gray-900 text-base">自然言語で追加指示・個別事情を入力（任意）</h3>
+          <ListChecks className="w-5 h-5 text-teal-600" />
+          <h3 className="font-bold text-gray-900 text-base">個別条件・ルールを追加入力（任意）</h3>
         </div>
         <p className="text-xs text-gray-500 mb-3">
-          「{s0}さんを毎週月曜日に入れて」「{s1}　夜勤は週1回のみ」「{s3}　毎週木曜日出勤(日)」「{s2}は必ず週所定労働時間数は入れて」など、自然な日本語で入力するとAIが正確にルール化し、シフト表に確実に反映されます。
+          「{s0}さんを毎週月曜日に入れて」「{s1}　夜勤は週1回のみ」「{s3}　毎週木曜日出勤(日)」「{s2}は必ず週所定労働時間数は入れて」などの定型表現で入力すると自動でルール化され、シフト表に確実に反映されます。
         </p>
 
         <textarea
@@ -264,7 +264,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition disabled:opacity-50 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
-              <span>{isInterpreting ? 'AIが解釈中...' : '🤖 AIで指示を解釈・ルール登録'}</span>
+              <span>{isInterpreting ? '条件を解析中...' : '📝 条件を解析・ルール登録'}</span>
             </button>
             <button
               onClick={() => setInstructionText('')}
@@ -281,7 +281,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
             <div className="flex items-center justify-between">
               <span className="font-bold text-teal-900 text-xs flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-600" />
-                <span>適用予定のAI個別ルール（{state.parsedRules.length}件）</span>
+                <span>適用予定の個別条件ルール（{state.parsedRules.length}件）</span>
               </span>
               <button
                 onClick={handleClearAllRules}
@@ -450,7 +450,7 @@ export const GenerateTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
           className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-teal-700 via-teal-600 to-sky-600 hover:from-teal-800 hover:via-teal-700 hover:to-sky-700 text-white font-black text-base shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer tracking-wider"
         >
           <Play className="w-5 h-5 fill-current" />
-          <span>{isGenerating ? 'AIが生成中...' : '🚀 AIシフトを自動生成する'}</span>
+          <span>{isGenerating ? '自動作成中...' : '🚀 シフトを自動作成する'}</span>
         </button>
 
         {state.lockedStaff.length > 0 && (

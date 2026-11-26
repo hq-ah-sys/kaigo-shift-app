@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppState } from '../../types';
 import { runFacilityChecks, computeStaffSummaries } from '../../utils/complianceEngine';
 import { runAIComplianceAudit } from '../../utils/geminiAI';
-import { ShieldCheck, Bot, Sparkles, CheckCircle2, AlertTriangle, AlertCircle, RefreshCw } from 'lucide-react';
+import { ShieldCheck, ClipboardCheck, Sparkles, RefreshCw } from 'lucide-react';
 
 interface Props {
   state: AppState;
@@ -24,7 +24,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
       const report = await runAIComplianceAudit(state);
       setAiReport(report);
     } catch (err: any) {
-      alert(`AI診断エラー: ${err.message}`);
+      alert(`診断エラー: ${err.message}`);
     } finally {
       setIsAuditing(false);
     }
@@ -128,15 +128,15 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
         ))}
       </div>
 
-      {/* AI Comprehensive Compliance Audit */}
+      {/* Comprehensive Compliance Audit */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <Bot className="w-5 h-5 text-teal-600" />
+            <ClipboardCheck className="w-5 h-5 text-teal-600" />
             <div>
-              <h3 className="font-bold text-gray-900 text-base">🤖 AI コンプライアンス・労務監査レポート</h3>
+              <h3 className="font-bold text-gray-900 text-base">📋 コンプライアンス・労務総合診断レポート</h3>
               <p className="text-xs text-gray-500 mt-0.5">
-                最新AIが労基法・36協定・介護人員基準を横断分析し、労務リスクと改善策を具体的に提案
+                労基法・36協定・介護人員基準の計算結果を横断集計し、労務リスクと改善ポイントを診断
               </p>
             </div>
           </div>
@@ -149,12 +149,12 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
             {isAuditing ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>AI診断中...</span>
+                <span>診断中...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                <span>AIで総合診断する</span>
+                <span>総合診断を実行する</span>
               </>
             )}
           </button>
@@ -166,7 +166,7 @@ export const CheckTab: React.FC<Props> = ({ state, onNavigateTab }) => {
           </div>
         ) : (
           <div className="text-center py-8 text-gray-400 text-xs">
-            「AIで総合診断する」ボタンを押すと、今月のシフト全体のコンプライアンス監査が実行されます。
+            「総合診断を実行する」ボタンを押すと、今月のシフト全体のコンプライアンス診断が実行されます。
           </div>
         )}
       </div>

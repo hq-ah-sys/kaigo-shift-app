@@ -1588,7 +1588,7 @@ export const CalendarTab: React.FC<Props> = ({ state, onUpdateState, onNavigateT
               </div>
               <ul className="list-disc list-inside space-y-1 text-sky-800 font-medium">
                 <li>
-                  <strong>「シフト再生成」を実行</strong>: 固定ロック（🔒）以外のシフトをAIアルゴリズムで再計算し、衝突や不足を自動回避します。
+                  <strong>「シフト再生成」を実行</strong>: 固定ロック（🔒）以外のシフトを最適化アルゴリズムで再計算し、衝突や不足を自動回避します。
                 </li>
                 <li>
                   <strong>手動セル変更</strong>: シフト表のマス目を直接クリックして「公休」や「希望休」「時間指定」に変更できます。

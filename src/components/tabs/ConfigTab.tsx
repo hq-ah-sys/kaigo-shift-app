@@ -10,7 +10,6 @@ import { GasSyncPanel } from '../GasSyncPanel';
 import { SyncConfig, SyncFacilityEntry, SyncFacilityMeta } from '../../utils/gasSync';
 import {
   Settings,
-  Key,
   Sparkles,
   RotateCcw,
   CheckCircle2,
@@ -60,28 +59,14 @@ export const ConfigTab: React.FC<Props> = ({
   onCreateFacility,
   onRenameFacility,
 }) => {
-  const [geminiModel, setGeminiModel] = useState(state.aiConfig.geminiModel || 'gemini-3.8-flash');
   const [testResult, setTestResult] = useState<{ success: boolean; msg: string } | null>(null);
   const [testing, setTesting] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(state.storageCustomName || 'kaigo_shift_pro_state_v1');
 
   // Backup & Restore states
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [lastBackupInfo, setLastBackupInfo] = useState<{ time: string; fileName: string } | null>(null);
-
-  const handleSaveAIConfig = () => {
-    onUpdateState((prev) => ({
-      ...prev,
-      aiConfig: {
-        ...prev.aiConfig,
-        geminiModel,
-      },
-    }));
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2500);
-  };
 
   const handleTestConnection = async () => {
     setTesting(true);
@@ -223,7 +208,7 @@ export const ConfigTab: React.FC<Props> = ({
           <div>
             <h2 className="text-lg font-bold text-gray-900">システム設定</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              拠点間のGoogle Drive自動共有、データのバックアップと復元、ブラウザ内自動保存、AI設定を行います
+              拠点間のGoogle Drive自動共有、データのバックアップと復元、ブラウザ内自動保存、エンジン確認を行います
             </p>
           </div>
         </div>
@@ -347,61 +332,33 @@ export const ConfigTab: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* AI Provider & API Key Settings */}
+      {/* Local Shift Engine Status */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-5">
         <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
-          <Key className="w-5 h-5 text-teal-600" />
-          <h3 className="font-bold text-gray-900 text-base">Gemini AI API 設定</h3>
+          <Server className="w-5 h-5 text-teal-600" />
+          <h3 className="font-bold text-gray-900 text-base">シフト自動作成・診断エンジン設定</h3>
         </div>
 
         <div className="space-y-4 text-xs sm:text-sm">
           <div className="p-4 bg-gradient-to-r from-teal-100/80 to-sky-100/80 border border-teal-300 rounded-xl space-y-2 text-xs text-teal-950">
             <div className="flex items-center gap-2 font-bold text-teal-950">
               <Server className="w-4.5 h-4.5 text-teal-700 shrink-0" />
-              <span>クライアントサイド・AIエンジン統合稼働中（完全無料・サーバーレス対応）</span>
+              <span>ローカル自動計算エンジン稼働中（完全無料・サーバーレス）</span>
             </div>
             <p className="text-slate-700 leading-relaxed">
-              自然言語による個別指示の解析やコンプライアンス診断は、ローカルのスマートAIエンジンおよびサーバーレス環境で安全に動作します。
+              シフト作成・個別条件ルールの解析・コンプライアンス診断は、外部APIへ送信せずブラウザ内の最適化エンジンで動作します（API料金や利用制限はありません）。
             </p>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-              使用モデル
-            </label>
-            <select
-              value={geminiModel}
-              onChange={(e) => setGeminiModel(e.target.value)}
-              className="w-full max-w-sm px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-700 focus:border-teal-700 outline-hidden"
-            >
-              <option value="gemini-3.8-flash">gemini-3.8-flash (推奨・高速高精度)</option>
-              <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (軽量)</option>
-            </select>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              onClick={handleSaveAIConfig}
-              className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs shadow-xs transition cursor-pointer"
-            >
-              設定を保存する
-            </button>
-
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             <button
               onClick={handleTestConnection}
               disabled={testing}
               className="px-4 py-2.5 rounded-xl border border-sky-300 bg-sky-100/70 hover:bg-sky-200/70 text-sky-900 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
             >
               <Sparkles className="w-4 h-4 text-sky-700" />
-              <span>{testing ? '接続テスト中...' : '🔌 API接続テスト'}</span>
+              <span>{testing ? '確認中...' : '🔍 エンジン動作確認'}</span>
             </button>
-
-            {saveSuccess && (
-              <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 animate-in fade-in">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>設定を保存しました</span>
-              </span>
-            )}
           </div>
 
           {testResult && (
